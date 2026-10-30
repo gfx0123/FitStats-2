@@ -312,8 +312,9 @@ private struct HistoryPoint: Identifiable {
     var id: Date { date }
 }
 
-/// The top of the tab: the body age filling most of the screen, glowing in its verdict's colour
-/// over a slowly moving light, counting up from their real age when it appears.
+/// The top of the tab: the body age in the middle of a dial that runs from 10 years younger
+/// (green, bottom left) to 10 years older (red, bottom right). A glowing marker shows where it
+/// lands, a notch at the top is their real age, and the biggest factors sit under it.
 private struct BodyAgeHero: View {
     let b: BodyAge
     let onDetails: () -> Void
@@ -324,46 +325,37 @@ private struct BodyAgeHero: View {
         let color = BodyAgeView.color(b.difference)
         let value = shown ?? b.bodyAge
         VStack(spacing: 0) {
-            Spacer(minLength: 12)
-            VStack(spacing: 0) {
-                Text("BODY AGE")
-                    .font(.caption.weight(.bold))
-                    .tracking(4)
-                    .foregroundStyle(Theme.secondary)
+            Spacer(minLength: 8)
+            VStack(spacing: 18) {
                 ZStack {
-                    Text(Format.number(value, decimals: 1))
-                        .foregroundStyle(color)
-                        .blur(radius: 36)
-                        .opacity(0.7)
-                    Text(Format.number(value, decimals: 1))
-                        .foregroundStyle(LinearGradient(colors: [.white, .white, color], startPoint: .top, endPoint: .bottom))
+                    AgeDial(difference: value - Double(b.age), color: color)
+                    VStack(spacing: 0) {
+                        Text("BODY AGE")
+                            .font(.caption2.weight(.bold))
+                            .tracking(3)
+                            .foregroundStyle(Theme.secondary)
+                        Text(Format.number(value, decimals: 1))
+                            .font(.system(size: 96, weight: .heavy, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
+                            .contentTransition(.numericText(value: value))
+                        Text("years · you're \(b.age)")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.secondary)
+                    }
+                    .padding(.horizontal, 50)
                 }
-                .font(.system(size: 160, weight: .bold, design: .rounded))
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.4)
-                .contentTransition(.numericText(value: value))
-                .padding(.top, 4)
-                Text("years")
-                    .font(.title3.weight(.medium))
-                    .foregroundStyle(Theme.secondary)
-                    .offset(y: -10)
-                Text(abs(b.difference) < 0.05 ? "The same as your age, \(b.age)" : "\(BodyAgeView.differenceText(b.difference)) than your \(b.age)")
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Capsule().fill(color.opacity(0.16)))
-                    .overlay(Capsule().stroke(color.opacity(0.35)))
+                .frame(width: 320, height: 320)
+                Text(abs(b.difference) < 0.05 ? "The same as your age" : BodyAgeView.differenceText(b.difference))
+                    .font(.headline)
                     .foregroundStyle(color)
-                    .padding(.top, 10)
-                AgeScale(age: Double(b.age), bodyAge: b.bodyAge)
-                    .frame(height: 34)
-                    .padding(.top, 34)
-                    .padding(.horizontal, 8)
+                drivers
             }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("bodyage-hero")
-            Spacer(minLength: 12)
+            Spacer(minLength: 8)
             Button(action: onDetails) {
                 VStack(spacing: 4) {
                     Text("What makes it up").font(.footnote.weight(.semibold))
@@ -376,7 +368,12 @@ private struct BodyAgeHero: View {
         }
         .frame(maxWidth: .infinity)
         .containerRelativeFrame(.vertical) { height, _ in height * 0.84 }
-        .background { AmbientGlow(color: color).padding(.horizontal, -16).padding(.top, -160).allowsHitTesting(false) }
+        .background {
+            RadialGradient(colors: [color.opacity(0.16), .clear], center: .init(x: 0.5, y: 0.38), startRadius: 10, endRadius: 330)
+                .padding(.horizontal, -16)
+                .padding(.top, -160)
+                .allowsHitTesting(false)
+        }
         .onAppear {
             guard shown == nil, !reduceMotion else { return }
             shown = Double(b.age)
@@ -384,55 +381,78 @@ private struct BodyAgeHero: View {
         }
         .onChange(of: b.bodyAge) { _, new in withAnimation(.snappy) { shown = new } }
     }
-}
 
-/// Two soft lights drifting behind the number.
-private struct AmbientGlow: View {
-    let color: Color
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
-            Canvas { ctx, size in
-                let blobs: [(Color, CGFloat, Double, Double)] = [(color, 0.75, 0.13, 0), (Theme.strainEnd, 0.55, 0.09, 2.1)]
-                for (c, scale, speed, phase) in blobs {
-                    let r = min(size.width, size.height) * scale
-                    let cx = size.width * (0.5 + 0.18 * CGFloat(sin(t * speed + phase)))
-                    let cy = size.height * (0.42 + 0.10 * CGFloat(cos(t * speed * 1.3 + phase)))
-                    let rect = CGRect(x: cx - r, y: cy - r, width: r * 2, height: r * 2)
-                    ctx.fill(Path(ellipseIn: rect), with: .radialGradient(Gradient(colors: [c.opacity(0.32), c.opacity(0)]),
-                                                                          center: CGPoint(x: cx, y: cy), startRadius: 0, endRadius: r))
+    /// The three factors that move it most, as pills.
+    private var drivers: some View {
+        let top = b.factors.filter { abs($0.years) >= 0.05 }.sorted { abs($0.years) > abs($1.years) }.prefix(3)
+        return HStack(spacing: 8) {
+            ForEach(Array(top)) { f in
+                HStack(spacing: 5) {
+                    Image(systemName: BodyAgeView.icon(f.key)).font(.caption2)
+                    Text("\(f.label.components(separatedBy: " ").last?.capitalized ?? f.label) \(BodyAgeView.yearsText(f.years))")
+                        .font(.caption.weight(.semibold))
+                        .lineLimit(1)
                 }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Capsule().fill(Color.white.opacity(0.07)))
+                .foregroundStyle(BodyAgeView.color(f.years))
             }
         }
     }
 }
 
-/// A line from 10 years younger to 10 older than their age, with their age and body age on it.
-private struct AgeScale: View {
-    let age: Double
-    let bodyAge: Double
+/// A 270° gauge from −10 to +10 years against their age, with ticks, the age notch at the top
+/// and a glowing marker at `difference`.
+private struct AgeDial: View {
+    let difference: Double
+    let color: Color
 
     var body: some View {
         GeometryReader { geo in
-            let w = geo.size.width
-            let x = { (v: Double) -> CGFloat in w * CGFloat(min(1, max(0, (v - age + 10) / 20))) }
-            ZStack(alignment: .topLeading) {
-                LinearGradient(colors: [Theme.recoveryGreen, Theme.recoveryYellow, Theme.recoveryRed], startPoint: .leading, endPoint: .trailing)
-                    .frame(height: 6)
-                    .clipShape(Capsule())
-                    .opacity(0.55)
-                    .offset(y: 4)
-                Rectangle().fill(.white.opacity(0.6)).frame(width: 2, height: 14).offset(x: x(age) - 1)
-                Circle().fill(.white).frame(width: 14, height: 14).offset(x: x(bodyAge) - 7)
-                    .shadow(color: .black.opacity(0.4), radius: 2)
-                Text("−10").font(.caption2).foregroundStyle(Theme.tertiary).offset(y: 18)
-                Text("your age").font(.caption2).foregroundStyle(Theme.tertiary)
-                    .fixedSize()
-                    .frame(width: 80)
-                    .offset(x: x(age) - 40, y: 18)
-                Text("+10").font(.caption2).foregroundStyle(Theme.tertiary).frame(width: w, alignment: .trailing).offset(y: 18)
+            let size = min(geo.size.width, geo.size.height)
+            let r = size / 2 - 16
+            let c = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
+            let point = { (d: Double, radius: CGFloat) -> CGPoint in
+                let f = (min(10, max(-10, d)) + 10) / 20
+                let a = (135 + 270 * f) * .pi / 180
+                return CGPoint(x: c.x + radius * CGFloat(cos(a)), y: c.y + radius * CGFloat(sin(a)))
+            }
+            ZStack {
+                Circle()
+                    .trim(from: 0, to: 0.75)
+                    .stroke(Color.white.opacity(0.06), style: StrokeStyle(lineWidth: 18, lineCap: .round))
+                    .rotationEffect(.degrees(135))
+                    .frame(width: r * 2, height: r * 2)
+                Circle()
+                    .trim(from: 0, to: 0.75)
+                    .stroke(AngularGradient(colors: [Theme.recoveryGreen, Theme.recoveryYellow, Theme.recoveryRed], center: .center,
+                                            startAngle: .degrees(0), endAngle: .degrees(270)),
+                            style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                    .rotationEffect(.degrees(135))
+                    .frame(width: r * 2, height: r * 2)
+                    .opacity(0.85)
+                Canvas { ctx, _ in
+                    for i in 0...40 {
+                        let d = Double(i) / 2 - 10
+                        let major = i % 10 == 0
+                        var tick = Path()
+                        tick.move(to: point(d, r - 16))
+                        tick.addLine(to: point(d, r - (major ? 28 : 21)))
+                        ctx.stroke(tick, with: .color(.white.opacity(major ? 0.45 : 0.16)), lineWidth: major ? 2 : 1)
+                    }
+                }
+                // Their real age: the top of the dial.
+                Capsule().fill(.white).frame(width: 3, height: 24).position(x: c.x, y: c.y - r)
+                // Body age.
+                Circle()
+                    .fill(color)
+                    .frame(width: 26, height: 26)
+                    .overlay(Circle().stroke(.white, lineWidth: 3))
+                    .shadow(color: color.opacity(0.9), radius: 14)
+                    .position(point(difference, r))
+                Text("−10").font(.caption2.weight(.semibold)).foregroundStyle(Theme.recoveryGreen).position(point(-10, r).applying(.init(translationX: 4, y: 26)))
+                Text("+10").font(.caption2.weight(.semibold)).foregroundStyle(Theme.recoveryRed).position(point(10, r).applying(.init(translationX: -4, y: 26)))
             }
         }
         .accessibilityHidden(true)
