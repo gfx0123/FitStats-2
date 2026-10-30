@@ -384,6 +384,10 @@ test("tools: the coach changes settings, the journal and logged workouts, and de
   assert.deepEqual(((await coach.runTool("get_settings", {}, ctx, null)) as Row).wake_times, times);
   await assert.rejects(coach.runTool("update_settings", { sex: "robot" }, ctx, null), /sex must be/);
   await coach.runTool("update_settings", { wake_times: null }, ctx, null);
+  // Body age answers: saved, and bad ones refused.
+  await coach.runTool("update_settings", { lifestyle: { smoking: "former", quit_age: "under40", vaping: "never", alcohol: "1-10" } }, ctx, null);
+  assert.deepEqual((tables.fs_user_settings[0].lifestyle as Row).smoking, "former");
+  await assert.rejects(coach.runTool("update_settings", { lifestyle: { smoking: "yes", vaping: "never", alcohol: "none" } }, ctx, null), /smoking must be/);
 
   // Journal: save, then delete only once confirmed, then put back.
   await coach.runTool("save_journal_entry", { date: "2026-10-16", tags: ["alcohol", "Late dinner"], note: "Birthday" }, ctx, null);

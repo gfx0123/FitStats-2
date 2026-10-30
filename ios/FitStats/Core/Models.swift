@@ -66,8 +66,12 @@ struct UserSettings: Codable, Equatable {
     /// Wake-up times set by hand, Monday first: minutes from midnight, nil for a morning without
     /// one (server 1.9.0+). Saved on its own (AppModel.saveWakeTimes), never with the rest.
     var wakeTimes: [Int?]? = nil
+    /// The Body age answers (server 1.14.0+); nil until answered. Saved on its own
+    /// (AppModel.saveLifestyle), never with the rest.
+    var lifestyle: Lifestyle? = nil
 
     enum CodingKeys: String, CodingKey {
+        case lifestyle
         case sex
         case maxHrOverride = "max_hr_override"
         case sleepNeedMin = "sleep_need_min"
@@ -79,10 +83,12 @@ struct UserSettings: Codable, Equatable {
 
     static let defaults = UserSettings(sex: "unspecified", maxHrOverride: nil, sleepNeedMin: 480, stepGoal: 10000, backfillDays: 730)
 
-    /// Everything the Preferences form edits (the wake-up times have their own screen).
+    /// Everything the Preferences form edits (the wake-up times and Body age answers have their
+    /// own screens).
     var withoutWakeTimes: UserSettings {
         var s = self
         s.wakeTimes = nil
+        s.lifestyle = nil
         return s
     }
 
@@ -95,6 +101,33 @@ struct UserSettings: Codable, Equatable {
         try c.encode(stepGoal, forKey: .stepGoal)
         try c.encode(backfillDays, forKey: .backfillDays)
         try c.encodeIfPresent(coachModel, forKey: .coachModel)
+    }
+}
+
+/// Answers to the Body age questions (lib/bodyage.ts Lifestyle).
+struct Lifestyle: Codable, Equatable {
+    /// never, former or current.
+    var smoking: String
+    /// For former smokers: under40, 40to54 or 55plus.
+    var quitAge: String?
+    /// never, sometimes or daily.
+    var vaping: String
+    /// Drinks a week (10 g each): none, 1-10, 11-20, 21-35 or 36+.
+    var alcohol: String
+
+    enum CodingKeys: String, CodingKey {
+        case smoking, vaping, alcohol
+        case quitAge = "quit_age"
+    }
+
+    var isComplete: Bool { smoking != "former" || quitAge != nil }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(smoking, forKey: .smoking)
+        try c.encode(smoking == "former" ? quitAge : nil, forKey: .quitAge)
+        try c.encode(vaping, forKey: .vaping)
+        try c.encode(alcohol, forKey: .alcohol)
     }
 }
 
@@ -368,6 +401,10 @@ struct BodyAge: Codable, Equatable {
     let difference: Double
     let factors: [Factor]
     let missing: [String]
+    /// Whether the server had their answers when it worked it out.
+    let answered: Bool
+    /// Things they told us that aren't counted, and why (e.g. vaping).
+    let notCounted: [String]
     let vo2max: Vo2?
     let whatIf: [WhatIf]
     let history: [Point]
@@ -375,9 +412,26 @@ struct BodyAge: Codable, Equatable {
     let note: String
 
     enum CodingKeys: String, CodingKey {
-        case age, difference, factors, missing, vo2max, history, window, note
+        case age, difference, factors, missing, vo2max, history, window, note, answered
         case bodyAge = "body_age"
         case whatIf = "what_if"
+        case notCounted = "not_counted"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        age = try c.decode(Int.self, forKey: .age)
+        bodyAge = try c.decode(Double.self, forKey: .bodyAge)
+        difference = try c.decode(Double.self, forKey: .difference)
+        factors = try c.decode([Factor].self, forKey: .factors)
+        missing = try c.decodeIfPresent([String].self, forKey: .missing) ?? []
+        answered = try c.decodeIfPresent(Bool.self, forKey: .answered) ?? false
+        notCounted = try c.decodeIfPresent([String].self, forKey: .notCounted) ?? []
+        vo2max = try c.decodeIfPresent(Vo2.self, forKey: .vo2max)
+        whatIf = try c.decodeIfPresent([WhatIf].self, forKey: .whatIf) ?? []
+        history = try c.decodeIfPresent([Point].self, forKey: .history) ?? []
+        window = try c.decode(Window.self, forKey: .window)
+        note = try c.decode(String.self, forKey: .note)
     }
 }
 

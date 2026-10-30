@@ -2,6 +2,7 @@
 // sex or max heart rate recomputes the history; a changed sleep need, step goal or history
 // length recomputes the scores.
 
+import { lifestyleFrom, LifestyleInputError } from "./bodyage.ts";
 import * as db from "./db.ts";
 import { wakeTimesFrom } from "./planner.ts";
 import {
@@ -42,7 +43,8 @@ export async function settingsWithMaxHr(): Promise<{ settings: UserSettings; max
 
 /**
  * Saves the settings in `body` (sex, max_hr_override, sleep_need_min, step_goal, backfill_days,
- * wake_times; others are ignored) plus `extra`, and starts the recomputing they need.
+ * wake_times, lifestyle; others are ignored) plus `extra`, and starts the recomputing they need.
+ * New Body age answers rebuild the statistics before it returns, so the app gets the number.
  */
 export async function applySettings(body: Row, extra: Row = {}): Promise<{ settings: UserSettings; max_hr: { value: number; source: string } }> {
   const current = await loadSettings();
@@ -63,6 +65,14 @@ export async function applySettings(body: Row, extra: Row = {}): Promise<{ setti
       throw new SettingsInputError((e as Error).message);
     }
   }
+  if ("lifestyle" in body) {
+    try {
+      patch.lifestyle = lifestyleFrom(body.lifestyle);
+    } catch (e) {
+      if (e instanceof LifestyleInputError) throw new SettingsInputError(e.message);
+      throw e;
+    }
+  }
   try {
     await db.update("fs_user_settings", "id=eq.1", patch);
   } catch (e) {
@@ -80,6 +90,9 @@ export async function applySettings(body: Row, extra: Row = {}): Promise<{ setti
     settings.step_goal !== current.step_goal || settings.backfill_days !== current.backfill_days;
   const state = await db.selectOne<SavedMaxHr>("fs_sync_state", "select=max_hr_used,max_hr_source&id=eq.1");
   const maxHr: MaxHr = await maxHrInUse(acc, settings, today, state);
+  if (!scoresChanged && "lifestyle" in body && JSON.stringify(settings.lifestyle ?? null) !== JSON.stringify(current.lifestyle ?? null)) {
+    await rebuildStats(today, settings);
+  }
   if (scoresChanged) {
     background((async () => {
       // Recomputes the scores too and saves the max heart rate it used.

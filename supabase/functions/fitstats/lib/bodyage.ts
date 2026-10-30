@@ -17,6 +17,14 @@
 //   7.5 MET-h/week minimum, against none (the upper threshold of benefit), and 0.69 at 10 or more
 //   times (Arem et al., JAMA Intern Med 2015). 5–10 times isn't in the abstract: kept at 0.61.
 // - Sleep: RR 1.12 for short and 1.30 for long sleep against 7–8 h (Cappuccio et al., Sleep 2010).
+// - Smoking: all-cause mortality HR 2.8 (men) and 3.0 (women) for current smokers against never;
+//   quitting before 40 avoids about 90% of the excess, quitting at 45–54 gains about 6 of the 10+
+//   years (Jha et al., NEJM 2013). Quitting at 55 or later isn't in the abstract: counted like 45–54.
+// - Alcohol: against >0–100 g a week, life expectancy at 40 about 0.5, 1–2 and 4–5 years lower at
+//   100–200, 200–350 and over 350 g (Wood et al., Lancet 2018, 599 912 drinkers); used as years.
+// - Vaping: no long-term mortality figure for people who never smoked, so it isn't counted (with
+//   smoking it counts as smoking: dual use HR 2.44 against neither, like smoking alone, in a
+//   3.5-year follow-up; Prev Med 2024).
 // - Human mortality rate doubling time "about 8 years" (Finch, Pike & Witten, Science 1990).
 // Uth's estimate was tested in trained men and women; it's used here because the band doesn't
 // report VO₂ max.
@@ -28,7 +36,7 @@ export const DOUBLING_YEARS = 8;
 export const WINDOW_DAYS = 30;
 /** The fewest days with the measure for a factor to count. */
 export const MIN_DAYS = 14;
-const MAX_TOTAL_YEARS = 15;
+const MAX_TOTAL_YEARS = 20;
 /** The studies are of adults; from 16 the youngest adults (20–29) stand in. */
 export const MIN_AGE = 16;
 
@@ -41,10 +49,58 @@ export interface BodyAgeInput {
   /** The max heart rate strain uses (set by hand, their sustained peak or 208 − 0.7 × age). */
   maxHr: number;
   maxHrSource: string;
+  /** Their answers to the Body age questions; null until they answer. */
+  lifestyle?: Lifestyle | null;
+}
+
+export interface Lifestyle {
+  smoking: "never" | "former" | "current";
+  /** How old they were when they quit (former smokers). */
+  quit_age?: "under40" | "40to54" | "55plus" | null;
+  vaping: "never" | "sometimes" | "daily";
+  /** Drinks a week, one drink = 10 g of alcohol. */
+  alcohol: "none" | "1-10" | "11-20" | "21-35" | "36+";
+}
+
+export class LifestyleInputError extends Error {}
+
+/** The answers from the app or the coach; null clears them. Throws on anything else. */
+export function lifestyleFrom(v: unknown): Lifestyle | null {
+  if (v === null) return null;
+  if (!v || typeof v !== "object") throw new LifestyleInputError("lifestyle must be an object or null");
+  const o = v as Record<string, unknown>;
+  const pick = <T extends string>(key: string, options: readonly T[]): T => {
+    if (typeof o[key] !== "string" || !options.includes(o[key] as T)) throw new LifestyleInputError(`${key} must be one of ${options.join(", ")}`);
+    return o[key] as T;
+  };
+  const smoking = pick("smoking", ["never", "former", "current"] as const);
+  return {
+    smoking,
+    quit_age: smoking === "former" ? pick("quit_age", ["under40", "40to54", "55plus"] as const) : null,
+    vaping: pick("vaping", ["never", "sometimes", "daily"] as const),
+    alcohol: pick("alcohol", ["none", "1-10", "11-20", "21-35", "36+"] as const),
+  };
+}
+
+/** Jha 2013: current smokers' hazard ratio against never-smokers. */
+function smokingHr(sex: string): number {
+  return sex === "female" ? 3.0 : 2.8;
+}
+
+export function smokingYears(l: Lifestyle, sex: string): number {
+  const hr = smokingHr(sex);
+  if (l.smoking === "current") return yearsFromRisk(hr);
+  if (l.smoking === "former") return yearsFromRisk(1 + (l.quit_age === "under40" ? 0.1 : 0.4) * (hr - 1));
+  return 0;
+}
+
+/** Wood 2018: lower life expectancy at 40 against up to 100 g a week (midpoints). */
+export function alcoholYears(l: Lifestyle): number {
+  return { "none": 0, "1-10": 0, "11-20": 0.5, "21-35": 1.5, "36+": 4.5 }[l.alcohol];
 }
 
 export interface BodyAgeFactor {
-  key: "fitness" | "steps" | "exercise" | "sleep";
+  key: "fitness" | "steps" | "exercise" | "sleep" | "smoking" | "alcohol";
   label: string;
   /** Their value and its unit, e.g. 8213 "steps a day". */
   value: number;
@@ -66,6 +122,10 @@ export interface BodyAge {
   factors: BodyAgeFactor[];
   /** Factors without enough data (e.g. "sleep: 9 of 14 nights needed"). */
   missing: string[];
+  /** Whether they answered the questions (the app asks before it shows the number). */
+  answered: boolean;
+  /** Things they told us that aren't counted, and why. */
+  not_counted: string[];
   vo2max: { value: number; typical_for_age: number; method: string; error_ml_kg_min: number } | null;
   what_if: { change: string; years: number }[];
   /** A point every 7 days over the last 6 months, oldest first. */
@@ -243,13 +303,52 @@ function factorsFor(w: Window, input: BodyAgeInput): { factors: BodyAgeFactor[];
 
 /**
  * Steps and exercise measure much the same activity, so they count as one: their average.
- * Fitness, activity and sleep add up, kept within ±15 years.
+ * Fitness, activity, sleep, smoking and alcohol add up, kept within ±20 years.
  */
 export function combine(factors: BodyAgeFactor[]): number {
   const y = (k: string) => factors.find((f) => f.key === k)?.years;
   const activity = [y("steps"), y("exercise")].filter((v): v is number => v !== undefined);
-  const total = (y("fitness") ?? 0) + (activity.length ? mean(activity) : 0) + (y("sleep") ?? 0);
+  const total = (y("fitness") ?? 0) + (activity.length ? mean(activity) : 0) + (y("sleep") ?? 0) +
+    (y("smoking") ?? 0) + (y("alcohol") ?? 0);
   return Math.max(-MAX_TOTAL_YEARS, Math.min(MAX_TOTAL_YEARS, total));
+}
+
+const SMOKING_TEXT: Record<string, string> = {
+  never: "Never smoked", current: "You smoke", under40: "Quit before 40", "40to54": "Quit at 40–54", "55plus": "Quit at 55 or later",
+};
+const ALCOHOL_TEXT: Record<string, string> = {
+  "none": "No alcohol", "1-10": "1–10 drinks a week", "11-20": "11–20 drinks a week", "21-35": "21–35 drinks a week", "36+": "36 or more drinks a week",
+};
+
+/** The answers as factors (counted like the band's), and what's asked but not counted. */
+function lifestyleFactors(l: Lifestyle, sex: string): { factors: BodyAgeFactor[]; notCounted: string[] } {
+  const hr = smokingHr(sex);
+  const smokingDetail = l.smoking === "current"
+    ? `Smokers die at about ${hr}× the rate of people who never smoked, losing over 10 years of life. Quitting before 40 takes away about 90% of that.`
+    : l.smoking === "former"
+    ? (l.quit_age === "under40" ? "Quitting before 40 takes away about 90% of the extra risk." : "Quitting at 45–54 gives back about 6 of the 10+ years smokers lose (quitting at 55 or later isn't in the study's summary, so it's counted the same).")
+    : "No extra risk from smoking.";
+  const factors: BodyAgeFactor[] = [
+    {
+      key: "smoking", label: "Smoking", value: 0, unit: SMOKING_TEXT[l.smoking === "former" ? l.quit_age ?? "40to54" : l.smoking],
+      reference: "never smoked", years: smokingYears(l, sex), detail: smokingDetail,
+      source: "Jha 2013 (NEJM, 202,248 US adults)", days: 0,
+    },
+    {
+      key: "alcohol", label: "Alcohol", value: 0, unit: ALCOHOL_TEXT[l.alcohol],
+      reference: "10 or fewer drinks a week (100 g of alcohol)", years: alcoholYears(l),
+      detail: "One drink = 10 g of alcohol: a small (250 ml) beer, a 100 ml glass of wine or a 30 ml shot; a half-litre beer is 2. " +
+        "Above 100 g a week, life expectancy at 40 was about 0.5, 1–2 and 4–5 years lower at 100–200, 200–350 and over 350 g.",
+      source: "Wood 2018 (Lancet, 599,912 drinkers)", days: 0,
+    },
+  ];
+  const notCounted: string[] = [];
+  if (l.vaping !== "never") {
+    notCounted.push(l.smoking === "current"
+      ? "Vaping: counted with your smoking. In a 3.5-year study, people who smoked and vaped died at the rate of people who only smoked."
+      : "Vaping: not counted. There are no long-term studies yet of how vaping affects mortality in people who never smoked, so there's no number to use. Nicotine is still addictive, and vaping isn't risk-free.");
+  }
+  return { factors, notCounted };
 }
 
 /** The estimate for the 30 days ending yesterday, or null without the age or a single factor. */
@@ -258,8 +357,11 @@ export function bodyAge(daysAll: Day[], today: Ymd, input: BodyAgeInput, addDays
   const end = addDays(today, -1);
   const from = addDays(end, -(WINDOW_DAYS - 1));
   const w = windowOf(daysAll, end, from);
-  const { factors, missing, vo2 } = factorsFor(w, input);
-  if (!factors.length) return null;
+  const measured = factorsFor(w, input);
+  if (!measured.factors.length) return null;
+  const { missing, vo2 } = measured;
+  const lifestyle = input.lifestyle ? lifestyleFactors(input.lifestyle, input.sex) : { factors: [], notCounted: [] };
+  const factors = [...measured.factors, ...lifestyle.factors];
   const difference = combine(factors);
 
   // What-ifs: the change in body age from one change, the rest as it is.
@@ -288,14 +390,26 @@ export function bodyAge(daysAll: Day[], today: Ymd, input: BodyAgeInput, addDays
     const d = recompute(factors.map((f) => (f.key === "sleep" ? { ...f, years: 0 } : f)));
     if (d < -0.05) whatIf.push({ change: "7–8.5 hours in bed a night", years: d });
   }
+  const smoking = factors.find((f) => f.key === "smoking");
+  if (smoking && input.lifestyle?.smoking === "current") {
+    const quit = smokingYears({ ...input.lifestyle, smoking: "former", quit_age: "under40" }, input.sex);
+    const d = recompute(factors.map((f) => (f.key === "smoking" ? { ...f, years: quit } : f)));
+    if (d < -0.05) whatIf.push({ change: input.age < 40 ? "Quitting smoking now" : "Quitting smoking", years: d });
+  }
+  const alcohol = factors.find((f) => f.key === "alcohol");
+  if (alcohol && alcohol.years > 0) {
+    const d = recompute(factors.map((f) => (f.key === "alcohol" ? { ...f, years: 0 } : f)));
+    if (d < -0.05) whatIf.push({ change: "10 or fewer drinks a week", years: d });
+  }
 
   // History: the same estimate every 7 days back over 6 months, where there was enough data.
   const history: { date: Ymd; body_age: number }[] = [];
   for (let back = 26; back >= 0; back--) {
     const e = addDays(end, -7 * back);
     const hw = windowOf(daysAll, e, addDays(e, -(WINDOW_DAYS - 1)));
+    // Today's answers stand for the past too: there are no earlier ones.
     const h = factorsFor(hw, input);
-    if (h.factors.length >= 2) history.push({ date: e, body_age: r1(input.age + combine(h.factors)) });
+    if (h.factors.length >= 2) history.push({ date: e, body_age: r1(input.age + combine([...h.factors, ...lifestyle.factors])) });
   }
 
   return {
@@ -304,6 +418,8 @@ export function bodyAge(daysAll: Day[], today: Ymd, input: BodyAgeInput, addDays
     difference: r1(difference),
     factors: factors.map((f) => ({ ...f, years: r1(f.years) })),
     missing,
+    answered: !!input.lifestyle,
+    not_counted: lifestyle.notCounted,
     vo2max: vo2 === null ? null : {
       value: r1(vo2), typical_for_age: r1(typicalVo2(input.age, input.sex)),
       method: `15.3 × max HR ÷ resting HR (Uth 2004${input.sex === "female" ? "; 14.5 for women, Uth 2005" : ""}); max HR ${input.maxHr} (${input.maxHrSource})`,

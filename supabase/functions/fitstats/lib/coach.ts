@@ -690,12 +690,13 @@ export const TOOLS: Json[] = [
   {
     name: "get_settings",
     description: "Their settings: sex, sleep need, step goal, max heart rate set by hand (null = automatic) and the max heart rate in use with its source, " +
-      "how many days of history to keep, and the wake-up times set by hand (Monday first, minutes from local midnight, null = free to sleep in).",
+      "how many days of history to keep, the wake-up times set by hand (Monday first, minutes from local midnight, null = free to sleep in), " +
+      "and their Body age answers (lifestyle: smoking, vaping, alcohol; null if not answered).",
     input_schema: { type: "object", properties: {} },
   },
   {
     name: "update_settings",
-    description: "Changes their settings, as Settings in the app does. Pass only what should change. Use it only when they ask for the change " +
+    description: "Changes their settings, as Settings in the app does (and their Body age answers: smoking, vaping, alcohol). Pass only what should change. Use it only when they ask for the change " +
       "(or agree to one you suggested), and say what you changed. A new sex or max heart rate recomputes strain, stress and zones for their whole history; " +
       "a new sleep need, step goal or history length recomputes the scores (it runs in the background and takes a minute). " +
       "A longer history downloads the older days from Google.",
@@ -713,6 +714,17 @@ export const TOOLS: Json[] = [
           maxItems: 7,
           items: { type: ["integer", "null"], minimum: 0, maximum: 1439 },
           description: "Wake-up times Monday to Sunday in minutes from local midnight (390 = 6:30), null for a morning free to sleep in; null instead of the list clears them all. Always pass all 7.",
+        },
+        lifestyle: {
+          type: ["object", "null"],
+          description: "Their Body age answers (all of them, as they should be). Drinks a week with one drink = 10 g of alcohol (a half-litre beer is 2).",
+          properties: {
+            smoking: { type: "string", enum: ["never", "former", "current"] },
+            quit_age: { type: ["string", "null"], enum: ["under40", "40to54", "55plus", null], description: "Age they quit, for former smokers" },
+            vaping: { type: "string", enum: ["never", "sometimes", "daily"] },
+            alcohol: { type: "string", enum: ["none", "1-10", "11-20", "21-35", "36+"] },
+          },
+          required: ["smoking", "vaping", "alcohol"],
         },
       },
     },
@@ -1103,7 +1115,7 @@ Changing things for them
 - You can't change or delete what the band recorded (sleep, workouts, heart rate, steps): it comes from Google and syncs again. You also can't disconnect Google, wipe their data, or change things that live only on their phone (the Home screen layout, reminders, widgets): tell them where in the app to do it.
 
 Body age
-- get_body_age has their body age: the age whose typical person has their fitness, resting heart rate, steps, exercise and sleep, with each factor's years and the study behind it. It's an estimate from published population studies, not a medical or biological test; their VO₂ max is estimated from heart rate because the band doesn't report it. Explain it that way, and point to the factors they can change.
+- get_body_age has their body age: the age whose typical person has their fitness, resting heart rate, steps, exercise and sleep, with each factor's years and the study behind it. It's an estimate from published population studies, not a medical or biological test; their VO₂ max is estimated from heart rate because the band doesn't report it. Explain it that way, and point to the factors they can change. It also counts their answers about smoking (Jha 2013) and alcohol (Wood 2018); vaping is asked but not counted, as there's no long-term mortality figure for it. Be factual and kind about these, never preachy; if they want to quit smoking or vaping, suggest their doctor or a quitline as well.
 
 Screenshots
 - They can attach workout files (CSV exports from apps like Strong, Hevy or an Apple Health exporter). FitStats saves the workouts in them to their Training log before you answer and tells you what it saved, how often they trained and what it assumed (units, date order): say plainly what was imported and what was left out, then look at how much and how they train (get_training has the last year in detail). If a file couldn't be read, explain why from its first lines and what export would work.

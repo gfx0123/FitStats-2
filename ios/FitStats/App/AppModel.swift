@@ -473,6 +473,25 @@ final class AppModel: ObservableObject {
         return true
     }
 
+    /// Saves the Body age answers; the server works out the body age again before it replies,
+    /// so the refresh after it has the new number. With the screenshot fixtures they are kept on
+    /// the phone only.
+    func saveLifestyle(_ answers: Lifestyle) async -> Bool {
+        if !isFixture {
+            guard let api else { return false }
+            do {
+                let body = try JSONSerialization.data(withJSONObject: ["lifestyle": JSONSerialization.jsonObject(with: JSONEncoder().encode(answers))])
+                _ = try await api.post("settings", body: body)
+            } catch {
+                handle(error)
+                return false
+            }
+        }
+        status?.settings.lifestyle = answers
+        if !isFixture { await refreshAll(force: true) }
+        return true
+    }
+
     // MARK: - Home layout backup
 
     private var homePush: Task<Void, Never>?

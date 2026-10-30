@@ -1008,8 +1008,10 @@ final class ScreenshotTests: XCTestCase {
         let hero = element(app, "bodyage-hero")
         XCTAssertTrue(hero.waitForExistence(timeout: 5), "no body age in the fixtures")
         XCTAssertTrue(hero.label.contains("years"), "body age hero: \(hero.label)")
+        sleep(2)
         shot("131-body-age")
         let fitness = app.buttons["bodyage-factor-fitness"]
+        for _ in 0..<4 where !(fitness.exists && fitness.isHittable) { app.swipeUp() }
         if fitness.waitForExistence(timeout: 3) {
             fitness.tap()
             XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Source:")).firstMatch.waitForExistence(timeout: 3),
@@ -1032,6 +1034,23 @@ final class ScreenshotTests: XCTestCase {
         shot("135-body-age-method")
         app.swipeUp()
         shot("136-body-age-method-2")
+        back(app)
+
+        // The questions, from Edit your answers.
+        let edit = app.buttons["bodyage-edit-answers"]
+        for _ in 0..<4 where !(edit.exists && edit.isHittable) { app.swipeUp() }
+        guard edit.exists, edit.isHittable else {
+            XCTFail("missing Edit your answers")
+            return
+        }
+        edit.tap()
+        XCTAssertTrue(app.buttons["q-smoking-never"].waitForExistence(timeout: 5), "the questions didn't open")
+        app.buttons["q-smoking-former"].tap()
+        XCTAssertTrue(app.buttons["q-quit-under40"].waitForExistence(timeout: 3), "no quit-age question for former smokers")
+        shot("137-body-age-questions")
+        app.buttons["q-quit-under40"].tap()
+        app.buttons["q-save"].tap()
+        XCTAssertTrue(element(app, "bodyage-hero").waitForExistence(timeout: 5), "saving the answers didn't close the sheet")
         app.terminate()
     }
 

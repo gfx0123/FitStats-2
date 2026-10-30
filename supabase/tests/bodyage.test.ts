@@ -79,3 +79,31 @@ test("body age: from 16 the youngest adults stand in, with a note", () => {
   assert.match(b.note, /studies are of adults/);
   assert.equal(bodyAge(data, today, { age: 15, sex: "male", maxHr: 199, maxHrSource: "observed" }, addDays), null);
 });
+
+test("body age: smoking (Jha 2013) and alcohol (Wood 2018) from the answers; vaping isn't counted", async () => {
+  const { lifestyleFrom, smokingYears, alcoholYears, LifestyleInputError } = await import("../functions/fitstats/lib/bodyage.ts");
+  const never = { smoking: "never", vaping: "never", alcohol: "1-10" } as const;
+  close(smokingYears({ ...never, smoking: "current" }, "male"), 8 * Math.log2(2.8));
+  close(smokingYears({ ...never, smoking: "current" }, "female"), 8 * Math.log2(3.0));
+  close(smokingYears({ ...never, smoking: "former", quit_age: "under40" }, "male"), 8 * Math.log2(1 + 0.1 * 1.8));
+  close(smokingYears(never, "male"), 0);
+  assert.deepEqual(["none", "1-10", "11-20", "21-35", "36+"].map((a) => alcoholYears({ ...never, alcohol: a as never })), [0, 0, 0.5, 1.5, 4.5]);
+  assert.throws(() => lifestyleFrom({ smoking: "sometimes", vaping: "never", alcohol: "none" }), LifestyleInputError);
+  assert.throws(() => lifestyleFrom({ smoking: "former", vaping: "never", alcohol: "none" }), /quit_age/);
+  assert.equal(lifestyleFrom(null), null);
+
+  const today = "2026-10-30";
+  const data = days(40, today, () => ({ rhr: 60, steps: 8000, active_moderate_min: 20, active_vigorous_min: 5, sleep_in_bed_min: 450 }));
+  const base = { age: 30, sex: "male", maxHr: 190, maxHrSource: "observed" };
+  const without = bodyAge(data, today, base, addDays)!;
+  assert.equal(without.answered, false);
+  const smoker = bodyAge(data, today, { ...base, lifestyle: { smoking: "current", vaping: "daily", alcohol: "21-35" } }, addDays)!;
+  assert.equal(smoker.answered, true);
+  close(smoker.difference, without.difference + 8 * Math.log2(2.8) + 1.5, 0.15);
+  assert.ok(smoker.what_if.some((w) => /Quitting smoking/.test(w.change) && w.years < -9));
+  assert.ok(smoker.what_if.some((w) => w.change === "10 or fewer drinks a week" && w.years === -1.5));
+  assert.match(smoker.not_counted[0], /counted with your smoking/);
+  const vaper = bodyAge(data, today, { ...base, lifestyle: { smoking: "never", vaping: "daily", alcohol: "none" } }, addDays)!;
+  close(vaper.difference, without.difference, 0.05);
+  assert.match(vaper.not_counted[0], /Vaping: not counted/);
+});

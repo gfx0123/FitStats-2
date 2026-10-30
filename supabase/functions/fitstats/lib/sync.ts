@@ -3,7 +3,7 @@
 // demand from the app; a database lock prevents overlapping runs. When the
 // recent days come back exactly as last time, nothing is written or recomputed.
 
-import { type BodyAge, bodyAge } from "./bodyage.ts";
+import { type BodyAge, bodyAge, type Lifestyle, lifestyleFrom } from "./bodyage.ts";
 import * as db from "./db.ts";
 import { GoogleApiError, HealthClient, refreshAccessToken } from "./google.ts";
 import { journalEntries } from "./journal.ts";
@@ -76,6 +76,8 @@ export interface UserSettings {
   wake_times?: unknown;
   /** The phone's clock: true for 24 hours, false for 12, null until the app has said. */
   clock_24h?: boolean | null;
+  /** Answers to the Body age questions (lib/bodyage.ts Lifestyle); null until answered. */
+  lifestyle?: unknown;
 }
 
 interface SyncState {
@@ -875,6 +877,15 @@ export async function rebuildStats(today: Ymd, settings: UserSettings): Promise<
   await db.upsert("fs_cache", [{ key: "stats", value: stats, updated_at: nowIso() }], "key");
 }
 
+/** The stored Body age answers, or null when missing or not readable. */
+function storedLifestyle(v: unknown): Lifestyle | null {
+  try {
+    return lifestyleFrom(v ?? null);
+  } catch {
+    return null;
+  }
+}
+
 /** Body age from their Google profile age and the max heart rate strain uses; null without the age. */
 async function bodyAgeFor(days: DayRow[], today: Ymd, settings: UserSettings): Promise<BodyAge | null> {
   const acc = await loadAccount();
@@ -883,7 +894,7 @@ async function bodyAgeFor(days: DayRow[], today: Ymd, settings: UserSettings): P
   const state = await db.selectOne<{ max_hr_used: number | null; max_hr_source: string | null }>("fs_sync_state", "select=max_hr_used,max_hr_source&id=eq.1");
   const maxHr = await maxHrInUse(acc, settings, today, state);
   return bodyAge(days as unknown as (Record<string, unknown> & { date: Ymd })[], today,
-    { age, sex: settings.sex, maxHr: maxHr.value, maxHrSource: maxHr.source }, addDays);
+    { age, sex: settings.sex, maxHr: maxHr.value, maxHrSource: maxHr.source, lifestyle: storedLifestyle(settings.lifestyle) }, addDays);
 }
 
 /** One sync run within `budgetMs`. Safe to call concurrently (second caller is skipped). */

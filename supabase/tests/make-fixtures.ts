@@ -14,6 +14,8 @@ const { addDays } = await import("../functions/fitstats/lib/util.ts");
 const { mainSleepOf, sleepDayPatch, sleepPointToRow } = await import("../functions/fitstats/lib/transform.ts");
 const { JOURNAL_TAGS, journalEntries, saveJournalEntry } = await import("../functions/fitstats/lib/journal.ts");
 const training = await import("../functions/fitstats/lib/training.ts");
+// Body age answers, so the screenshots show the number (the questions are opened from there).
+tables.fs_user_settings[0].lifestyle = { smoking: "never", quit_age: null, vaping: "never", alcohol: "1-10" };
 const log = await runSync("fixtures", true, 95_000);
 if (log.status !== "ok") throw new Error(`sync failed: ${JSON.stringify(log)}`);
 
