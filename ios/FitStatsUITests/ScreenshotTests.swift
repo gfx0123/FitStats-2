@@ -187,7 +187,25 @@ final class ScreenshotTests: XCTestCase {
         open(app, "ring-recovery", ["05-recovery", "06-recovery-2"])
         open(app, "ring-sleep", ["07-sleep", "08-sleep-2", "09-sleep-3"])
         open(app, "ring-strain", ["10-strain", "11-strain-2"])
-        open(app, "ring-stress", ["12-stress"])
+        // Stress, then a tap on its day-by-day chart shows that day's value in a bubble.
+        let stress = app.buttons["ring-stress"]
+        if stress.waitForExistence(timeout: 5) {
+            stress.tap()
+            shot("12-stress")
+            let chart = app.descendants(matching: .any)["trend-chart"].firstMatch
+            if chart.waitForExistence(timeout: 5) {
+                if !chart.isHittable { app.swipeUp() }
+                chart.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5)).tap()
+                XCTAssertTrue(app.descendants(matching: .any)["chart-bubble"].firstMatch.waitForExistence(timeout: 3), "no bubble on the stress chart")
+                shot("12-stress-bubble")
+            } else {
+                XCTFail("missing trend-chart")
+            }
+            back(app)
+            _ = app.buttons["ring-recovery"].waitForExistence(timeout: 5)
+        } else {
+            XCTFail("missing ring-stress")
+        }
 
         openTrends(app)
         shot("13-trends")

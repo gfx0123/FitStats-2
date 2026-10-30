@@ -69,6 +69,7 @@ private struct TrendCard: View {
             }
             if points.count >= 2 {
                 DailyMetricChart(points: points, def: def, average: referenceLine ?? mean, color: color, height: 160)
+                    .accessibilityIdentifier("trend-chart")
             } else {
                 Text("Not enough data yet.").font(Font.fs(.footnote)).foregroundStyle(Theme.tertiary)
             }
