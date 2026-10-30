@@ -825,6 +825,8 @@ export function hrrHistory(workouts: WorkoutRow[], today: Ymd): HrrPoint[] {
 
 export interface StatsPayload {
   generatedAt: string;
+  /** The server version that built it: a newer server rebuilds it (index.ts stats). */
+  server_version?: string;
   today: Ymd;
   firstDate: Ymd | null;
   dayCount: number;

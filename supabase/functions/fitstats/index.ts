@@ -296,7 +296,8 @@ async function day(params: URLSearchParams): Promise<Response> {
 
 async function stats(): Promise<Response> {
   const cached = await db.selectOne<Row>("fs_cache", "select=value&key=eq.stats");
-  if (cached) return json(cached.value);
+  // Stats an older server built miss what this one adds (body age came with 1.14.0): rebuilt once.
+  if (cached && (cached.value as Row | null)?.server_version === VERSION) return json(cached.value);
   const acc = await loadAccount();
   const settings = await loadSettings();
   await rebuildStats(clockFor(acc).today(), settings);

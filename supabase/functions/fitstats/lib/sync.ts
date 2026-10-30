@@ -874,6 +874,7 @@ export async function rebuildStats(today: Ymd, settings: UserSettings): Promise<
   ]);
   const stats = buildStats(days, today, settings, journal, workouts);
   stats.body_age = await bodyAgeFor(days, today, settings);
+  stats.server_version = VERSION;
   await db.upsert("fs_cache", [{ key: "stats", value: stats, updated_at: nowIso() }], "key");
 }
 
