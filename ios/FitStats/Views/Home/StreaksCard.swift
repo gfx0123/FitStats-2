@@ -47,7 +47,7 @@ struct StreaksCard: View {
                     }
                     if let note = footnote(stats, items: items) {
                         Text(note)
-                            .font(.caption2)
+                            .font(Font.fs(.caption2))
                             .foregroundStyle(Theme.tertiary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -138,33 +138,33 @@ private struct StreakTileView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .top, spacing: 5) {
                 Image(systemName: item.icon)
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(item.tint)
                 Text(s.label)
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(2, reservesSpace: true)
                 Spacer(minLength: 0)
             }
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(verbatim: "\(s.current)")
-                    .font(Theme.number(22))
+                    .font(Font.fredoka(22))
                     .foregroundStyle(s.current > 0 ? Color.white : Theme.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 Text(s.current == 1 ? "day" : "days")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                 Spacer(minLength: 0)
                 if matchesBest {
                     Image(systemName: "trophy.fill")
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(Theme.recoveryYellow)
                 }
             }
             StreakProgressBar(fraction: fraction(s), tint: item.tint)
             Text(bestText(s, matchesBest: matchesBest))
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)

@@ -83,7 +83,7 @@ struct ExerciseNameSuggestions: View {
                 HStack(spacing: 6) {
                     ForEach(matches.prefix(8), id: \.self) { name in
                         Button(name) { pick(name) }
-                            .font(.footnote)
+                            .font(Font.fs(.footnote))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
                             .background(Capsule().fill(Color.white.opacity(0.08)))
@@ -108,7 +108,7 @@ struct AskCoachButton: View {
                 Image(systemName: "sparkles")
                 Text("Ask")
             }
-            .font(.subheadline.weight(.semibold))
+            .font(Font.fs(.subheadline, .semibold))
         }
         .tint(Theme.sleep)
         .accessibilityLabel("Ask coach")

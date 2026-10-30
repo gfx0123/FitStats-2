@@ -44,7 +44,7 @@ struct RestingHRTrendCard: View {
             SectionHeader(title: "Resting heart rate trend", subtitle: subtitle(recordedCount: recordedCount))
             Spacer()
             Image(systemName: "chevron.right")
-                .font(.caption2.weight(.semibold))
+                .font(Font.fs(.caption2, .semibold))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -54,16 +54,16 @@ struct RestingHRTrendCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(Format.number(latest.value))
-                        .font(Theme.number(30))
+                        .font(Font.fredoka(30))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                     Text("bpm")
-                        .font(Theme.number(16, weight: .semibold))
+                        .font(Font.fredoka(16, weight: .semibold))
                         .foregroundStyle(Theme.secondary)
                     DeltaBadge(change: difference(latest, baseline: baseline), better: .lower, suffix: " bpm")
                 }
                 Text(dayCaption(latest.day))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -71,11 +71,11 @@ struct RestingHRTrendCard: View {
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(baseline.map { "\(Format.number($0)) bpm" } ?? "–")
-                    .font(Theme.number(20, weight: .semibold))
+                    .font(Font.fredoka(20, weight: .semibold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                 Text(baseline == nil ? "No baseline yet" : "30-day baseline")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
             }
@@ -154,7 +154,7 @@ struct RestingHRTrendCard: View {
             Text("Low \(Format.number(low)) · High \(Format.number(high)) bpm")
                 .monospacedDigit()
         }
-        .font(.caption2)
+        .font(Font.fs(.caption2))
         .foregroundStyle(Theme.tertiary)
         .lineLimit(1)
         .accessibilityHidden(true)

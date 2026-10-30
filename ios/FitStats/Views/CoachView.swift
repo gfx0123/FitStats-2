@@ -80,7 +80,7 @@ struct CoachView: View {
                     HStack(spacing: 6) {
                         CoachCharacter(persona: coach.persona, size: 26, thinking: coach.isSending && coach.streamingText.isEmpty,
                                        talking: coach.isSending && !coach.streamingText.isEmpty)
-                        Text(coach.persona.name).font(.headline).foregroundStyle(.white)
+                        Text(coach.persona.name).font(Font.fs(.headline)).foregroundStyle(.white)
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("coach-name-bar")
@@ -138,13 +138,13 @@ struct CoachView: View {
             // Not a button: a tap here only hides the keyboard (see the Coach UI test).
             CoachCharacter(persona: coach.persona, size: 128)
                 .padding(.bottom, -4)
-            Text(coach.persona.name).font(.title2.bold())
+            Text(coach.persona.name).font(Font.fs(.title2, .bold))
             Text(coach.persona.tagline.uppercased())
-                .font(.caption.weight(.semibold))
+                .font(Font.fs(.caption, .semibold))
                 .tracking(1.2)
                 .foregroundStyle(coach.persona.color)
             Text(coach.persona.summary)
-                .font(.subheadline)
+                .font(Font.fs(.subheadline))
                 .foregroundStyle(Theme.secondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -163,9 +163,9 @@ struct CoachView: View {
                     ForEach(Self.suggestions) { s in
                         Button { coach.send(s.text) } label: {
                             VStack(alignment: .leading, spacing: 8) {
-                                Image(systemName: s.icon).font(.subheadline).foregroundStyle(coach.persona.color)
+                                Image(systemName: s.icon).font(Font.fs(.subheadline)).foregroundStyle(coach.persona.color)
                                 Text(s.text)
-                                    .font(.footnote.weight(.medium))
+                                    .font(Font.fs(.footnote, .medium))
                                     .foregroundStyle(.white)
                                     .multilineTextAlignment(.leading)
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -173,7 +173,7 @@ struct CoachView: View {
                             }
                             .padding(12)
                             .frame(maxWidth: .infinity, minHeight: 92, alignment: .topLeading)
-                            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.card))
+                            .background(Glass(cornerRadius: 16))
                             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Theme.cardBorder, lineWidth: 1))
                         }
                         .buttonStyle(.plain)
@@ -189,7 +189,7 @@ struct CoachView: View {
             Banner(icon: "exclamationmark.triangle.fill", text: error, color: Theme.recoveryYellow, actionTitle: "OK") { coach.error = nil }
         }
         Text("The coach uses Claude by Anthropic: your question, any screenshots you attach and a summary of your FitStats data are sent to Anthropic's API to answer it. Only small previews of screenshots are kept. Workout files (CSV) are read by your own server, which saves their workouts to Training and sends the coach a summary. It's an AI coach, not medical advice.")
-            .font(.caption2)
+            .font(Font.fs(.caption2))
             .foregroundStyle(Theme.tertiary)
             .multilineTextAlignment(.center)
             .padding(.top, 4)
@@ -199,10 +199,10 @@ struct CoachView: View {
         Card {
             SectionHeader(title: "Set up the coach")
             Text("The coach needs a Claude API key on your server. Create one in the Anthropic Console, then add it in Supabase → Edge Functions → Secrets as ANTHROPIC_API_KEY. Step-by-step instructions are in SETUP.md.")
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.secondary)
             Button("Check again") { Task { await coach.refresh() } }
-                .font(.footnote.weight(.semibold))
+                .font(Font.fs(.footnote, .semibold))
         }
     }
 
@@ -219,13 +219,13 @@ struct CoachView: View {
                     HStack(spacing: 8) {
                         TypingDots()
                         Text(coach.toolStatus ?? "Thinking…")
-                            .font(.footnote)
+                            .font(Font.fs(.footnote))
                             .foregroundStyle(Theme.secondary)
                             .animation(.default, value: coach.toolStatus)
                     }
                     .padding(.vertical, 12)
                     .padding(.horizontal, 14)
-                    .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card))
+                    .background(Glass(cornerRadius: 18))
                     Spacer(minLength: 24)
                 }
             } else {
@@ -236,11 +236,11 @@ struct CoachView: View {
         if let error = coach.error {
             VStack(alignment: .leading, spacing: 8) {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.recoveryYellow)
                 if coach.failedQuestion != nil {
                     Button("Try again") { coach.retry() }
-                        .font(.footnote.weight(.semibold))
+                        .font(Font.fs(.footnote, .semibold))
                 }
             }
             .padding(12)
@@ -258,7 +258,7 @@ struct CoachView: View {
         VStack(spacing: 8) {
             if let fileProblem {
                 Label(fileProblem, systemImage: "exclamationmark.triangle.fill")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.recoveryYellow)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .onTapGesture { self.fileProblem = nil }
@@ -278,7 +278,7 @@ struct CoachView: View {
                                 .overlay(alignment: .topTrailing) {
                                     Button { attachments.removeAll { $0.id == a.id } } label: {
                                         Image(systemName: "xmark.circle.fill")
-                                            .font(.system(size: 18))
+                                            .font(Font.fredoka(18, weight: .regular))
                                             .symbolRenderingMode(.palette)
                                             .foregroundStyle(.white, Color.black.opacity(0.7))
                                     }
@@ -296,7 +296,7 @@ struct CoachView: View {
             HStack(alignment: .bottom, spacing: 8) {
                 PhotosPicker(selection: $pickedItems, maxSelectionCount: max(1, 3 - attachments.count), matching: .images) {
                     Image(systemName: "photo.badge.plus")
-                        .font(.system(size: 21, weight: .medium))
+                        .font(Font.fredoka(21, weight: .medium))
                         .foregroundStyle(attachments.count < 3 && coach.isConfigured ? coach.persona.color : Color.white.opacity(0.2))
                         .frame(width: 34, height: 40)
                 }
@@ -305,7 +305,7 @@ struct CoachView: View {
                 .accessibilityIdentifier("coach-attach")
                 Button { pickingFiles = true } label: {
                     Image(systemName: "doc.badge.plus")
-                        .font(.system(size: 20, weight: .medium))
+                        .font(Font.fredoka(20, weight: .medium))
                         .foregroundStyle(files.count < 3 && coach.isConfigured ? coach.persona.color : Color.white.opacity(0.2))
                         .frame(width: 30, height: 40)
                 }
@@ -328,7 +328,7 @@ struct CoachView: View {
                     fileProblem = nil
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 34))
+                        .font(Font.fredoka(34, weight: .regular))
                         .foregroundStyle(canSend ? coach.persona.color : Color.white.opacity(0.2))
                 }
                 .disabled(!canSend)
@@ -401,7 +401,7 @@ private struct MessageRow: View {
                 }
                 if !message.content.isEmpty {
                     Text(message.content)
-                        .font(.subheadline)
+                        .font(Font.fs(.subheadline))
                         .padding(.vertical, 10)
                         .padding(.horizontal, 14)
                         .background(
@@ -419,11 +419,11 @@ private struct MessageRow: View {
                 // Only the reply being written moves; the rest stay still.
                 CoachCharacter(persona: persona, size: 34, talking: streaming, animated: streaming)
                 CoachMarkdown(text: message.content)
-                    .font(.subheadline)
+                    .font(Font.fs(.subheadline))
                     .padding(.vertical, 12)
                     .padding(.horizontal, 14)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.card))
+                    .background(Glass(cornerRadius: 18))
                     .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(persona.color.opacity(0.22), lineWidth: 1))
                     .overlay(alignment: .bottomTrailing) {
                         if streaming { TypingDots().padding(8) }
@@ -450,7 +450,7 @@ struct WeeklyCard: View {
                 Spacer()
                 if coach.weekly != nil && !coach.isWritingWeekly {
                     Button { coach.generateWeekly() } label: { Image(systemName: "arrow.clockwise") }
-                        .font(.footnote.weight(.semibold))
+                        .font(Font.fs(.footnote, .semibold))
                         .disabled(!coach.isConfigured)
                         .accessibilityLabel("Write this week's summary again")
                 }
@@ -459,23 +459,23 @@ struct WeeklyCard: View {
                 if coach.weeklyStreaming.isEmpty {
                     HStack(spacing: 8) {
                         TypingDots()
-                        Text("Looking back at your week…").font(.footnote).foregroundStyle(Theme.secondary)
+                        Text("Looking back at your week…").font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
                     }
                 } else {
-                    CoachMarkdown(text: coach.weeklyStreaming, linesAsParagraphs: true).font(.subheadline)
+                    CoachMarkdown(text: coach.weeklyStreaming, linesAsParagraphs: true).font(Font.fs(.subheadline))
                 }
             } else if let weekly = coach.weekly {
-                CoachMarkdown(text: weekly.text, linesAsParagraphs: true).font(.subheadline)
+                CoachMarkdown(text: weekly.text, linesAsParagraphs: true).font(Font.fs(.subheadline))
                 Text("Written \(Format.relative(weekly.createdAt))\(coach.label(for: weekly.model).map { " · \($0)" } ?? "")")
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.tertiary)
             } else {
                 Text("Your coach looks back at the week every Sunday evening. Turn on the reminder in Settings, or write it now.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
                 Button { coach.generateWeekly() } label: {
                     Label("Write my week so far", systemImage: "calendar")
-                        .font(.subheadline.weight(.semibold))
+                        .font(Font.fs(.subheadline, .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(Capsule().fill(Theme.sleep.opacity(0.22)))
@@ -484,7 +484,7 @@ struct WeeklyCard: View {
                 .disabled(!coach.isConfigured)
             }
             if let error = coach.weeklyError {
-                Label(error, systemImage: "exclamationmark.triangle.fill").font(.caption).foregroundStyle(Theme.recoveryYellow)
+                Label(error, systemImage: "exclamationmark.triangle.fill").font(Font.fs(.caption)).foregroundStyle(Theme.recoveryYellow)
             }
         }
         .accessibilityElement(children: .contain)
@@ -504,7 +504,7 @@ private struct BriefingCard: View {
                 Spacer()
                 if coach.brief != nil && !coach.isBriefing {
                     Button { coach.generateBrief() } label: { Image(systemName: "arrow.clockwise") }
-                        .font(.footnote.weight(.semibold))
+                        .font(Font.fs(.footnote, .semibold))
                         .accessibilityLabel("Write a new briefing")
                 }
             }
@@ -512,24 +512,24 @@ private struct BriefingCard: View {
                 if coach.briefStreaming.isEmpty {
                     HStack(spacing: 8) {
                         TypingDots()
-                        Text("Reading your night and your trends…").font(.footnote).foregroundStyle(Theme.secondary)
+                        Text("Reading your night and your trends…").font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
                     }
                 } else {
-                    CoachMarkdown(text: coach.briefStreaming, linesAsParagraphs: true).font(.subheadline)
+                    CoachMarkdown(text: coach.briefStreaming, linesAsParagraphs: true).font(Font.fs(.subheadline))
                 }
             } else if let brief = coach.brief {
                 let byModel = coach.label(for: brief.model).map { " · \($0)" } ?? ""
-                CoachMarkdown(text: brief.text, linesAsParagraphs: true).font(.subheadline)
+                CoachMarkdown(text: brief.text, linesAsParagraphs: true).font(Font.fs(.subheadline))
                 Text("Written \(Format.relative(brief.createdAt))\(byModel)")
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.tertiary)
             } else {
                 Text("A short read on your recovery, what to do today and when to sleep tonight.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
                 Button { coach.generateBrief() } label: {
                     Label("Write today's briefing", systemImage: "sparkles")
-                        .font(.subheadline.weight(.semibold))
+                        .font(Font.fs(.subheadline, .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(Capsule().fill(Theme.sleep.opacity(0.22)))
@@ -538,7 +538,7 @@ private struct BriefingCard: View {
                 .foregroundStyle(Theme.sleep)
             }
             if let error = coach.briefError {
-                Text(error).font(.caption).foregroundStyle(Theme.recoveryYellow)
+                Text(error).font(Font.fs(.caption)).foregroundStyle(Theme.recoveryYellow)
             }
         }
     }
@@ -651,8 +651,8 @@ struct CoachHistoryView: View {
                         }
                     } label: {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(thread.title).font(.subheadline.weight(.medium)).foregroundStyle(.white).lineLimit(2)
-                            Text(Format.relative(thread.updatedAt)).font(.caption).foregroundStyle(Theme.tertiary)
+                            Text(thread.title).font(Font.fs(.subheadline, .medium)).foregroundStyle(.white).lineLimit(2)
+                            Text(Format.relative(thread.updatedAt)).font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
                         }
                         .padding(.vertical, 2)
                     }
@@ -664,7 +664,7 @@ struct CoachHistoryView: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .background(Theme.background)
+            .background(AppBackground())
             .navigationTitle("Conversations")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

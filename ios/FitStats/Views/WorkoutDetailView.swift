@@ -173,13 +173,13 @@ struct WorkoutDetailView: View {
         return Card {
             HStack(spacing: 14) {
                 Image(systemName: x.symbol)
-                    .font(.title2)
+                    .font(Font.fs(.title2))
                     .frame(width: 52, height: 52)
                     .background(Circle().fill(Theme.strain.opacity(0.18)))
                     .foregroundStyle(Theme.strain)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(x.displayName).font(.title3.weight(.semibold))
-                    Text(range.isEmpty ? Format.longDay(date) : range).font(.caption).foregroundStyle(Theme.secondary)
+                    Text(x.displayName).font(Font.fs(.title3, .semibold))
+                    Text(range.isEmpty ? Format.longDay(date) : range).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                     if x.originLabel != nil || !(x.sourceDevice ?? "").isEmpty {
                         origin(x)
                     }
@@ -193,14 +193,14 @@ struct WorkoutDetailView: View {
         HStack(spacing: 6) {
             if let label = x.originLabel {
                 Text(label)
-                    .font(.caption2.weight(.semibold))
+                    .font(Font.fs(.caption2, .semibold))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(Capsule().fill(Theme.strain.opacity(0.16)))
                     .foregroundStyle(Theme.strain)
             }
             if let device = x.sourceDevice, !device.isEmpty {
-                Text(device).font(.caption2).foregroundStyle(Theme.tertiary)
+                Text(device).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
             }
         }
     }
@@ -302,7 +302,7 @@ struct WorkoutDetailView: View {
                         .foregroundStyle(Color.white.opacity(0.4))
                         .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
                         .annotation(position: .top, alignment: .leading) {
-                            Text("avg \(Int(avg.rounded()))").font(.caption2).foregroundStyle(Theme.tertiary)
+                            Text("avg \(Int(avg.rounded()))").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                         }
                 }
                 .chartXScale(domain: 0...window)
@@ -323,12 +323,12 @@ struct WorkoutDetailView: View {
                 .chartYScale(domain: .automatic(includesZero: false))
                 .frame(height: 180)
             } else {
-                Text("No minute heart rate for this workout.").font(.footnote).foregroundStyle(Theme.tertiary)
+                Text("No minute heart rate for this workout.").font(Font.fs(.footnote)).foregroundStyle(Theme.tertiary)
             }
             if let coverage, coverage.partial, coverage.minutes > 0 {
                 Label("Heart rate recorded for \(coverage.minutes) of \(coverage.window) min, so strain and zones cover only those minutes.",
                       systemImage: "exclamationmark.circle")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.recoveryYellow)
             }
         }
@@ -348,12 +348,12 @@ struct WorkoutDetailView: View {
                 let charted = history.count + (history.contains(where: { $0.id == x.id }) ? 0 : 1)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(recoveryText(hrr1, x.hrr2min))
-                        .font(Theme.number(20))
+                        .font(Font.fredoka(20))
                         .foregroundStyle(.white)
                         .fixedSize(horizontal: false, vertical: true)
                     if let end = x.endHr {
                         Text("From \(Int(end.rounded())) bpm at the end of the workout")
-                            .font(.caption)
+                            .font(Font.fs(.caption))
                             .foregroundStyle(Theme.secondary)
                     }
                 }
@@ -362,11 +362,11 @@ struct WorkoutDetailView: View {
                     recoveryChart(x, hrr1: hrr1, history: history, earlier: earlier)
                 }
                 Text("A bigger drop usually goes with better fitness. It also depends on how hard you finished and whether you kept moving, so compare similar workouts.")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
             } else {
                 Text("Heart-rate recovery needs a hard finish and heart rate for the 2 minutes after the workout.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
             }
         }
@@ -399,18 +399,18 @@ struct WorkoutDetailView: View {
             let size = Int(abs(delta))
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("Your \(x.displayName) average: \(Self.dropText(average)) bpm after 1 min over \(earlier.count) earlier sessions")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 4)
                 Text(delta == 0 ? "as usual" : "\(size) bpm \(delta > 0 ? "bigger" : "smaller") drop")
-                    .font(.caption.weight(.semibold))
+                    .font(Font.fs(.caption, .semibold))
                     .foregroundStyle(delta == 0 ? Theme.secondary : (delta > 0 ? Theme.recoveryGreen : Theme.recoveryYellow))
             }
         } else {
             let left = 3 - earlier.count
             Text("Your \(x.displayName) average shows once 3 earlier sessions have a recovery (\(left) more to go).")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -432,7 +432,7 @@ struct WorkoutDetailView: View {
         let label = ChartAxis.dayLabel(ChartAxis.spansYears(dates))
         let domain = ChartAxis.paddedDomain(data.map(\.value) + (average.map { [$0] } ?? []), includeZero: false)
         return VStack(alignment: .leading, spacing: 6) {
-            Text("\(x.displayName): drop after 1 min, last 12 months").font(.caption2).foregroundStyle(Theme.tertiary)
+            Text("\(x.displayName): drop after 1 min, last 12 months").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
             Chart {
                 ForEach(data) { p in
                     LineMark(x: .value("Day", p.date), y: .value("Drop", p.value))
@@ -491,7 +491,7 @@ struct WorkoutDetailView: View {
                 }
                 if hrr.count == 5 {
                     Text(zonesNote(fitbitShown: hasFitbit))
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.tertiary)
                 }
             }
@@ -517,7 +517,7 @@ struct WorkoutDetailView: View {
                     KeyValueRow(key: "Share of the day's load", value: "\(Int((min(1, trimp / dayTrimp) * 100).rounded()))%")
                 }
                 Text("Workout strain is what this workout alone scores on the 0\u{2060}–\u{2060}100 day scale. Strain does not add up, so the day's strain is computed from the whole day's TRIMP.")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
             }
         }

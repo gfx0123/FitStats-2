@@ -56,7 +56,7 @@ struct ExerciseLibraryView: View {
             }
             if library.exercises.isEmpty {
                 Text("The exercise library comes from your server. Update it (server 1.8.0 or later) to see which muscles each exercise works.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
             }
             ForEach(groups) { group in
@@ -66,7 +66,7 @@ struct ExerciseLibraryView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background.ignoresSafeArea())
+        .background(AppBackground())
         .listSectionSpacing(.compact)
         .contentMargins(.top, 6, for: .scrollContent)
         .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search exercises")
@@ -109,7 +109,7 @@ struct ExerciseLibraryView: View {
     private func filterChip(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.footnote.weight(.semibold))
+                .font(Font.fs(.footnote, .semibold))
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
                 .background(Capsule().fill(selected ? Theme.muscle : Color.white.opacity(0.08)))
@@ -122,9 +122,9 @@ struct ExerciseLibraryView: View {
         let label = HStack(spacing: 12) {
             BodyMapThumbnail(levels: Dictionary(uniqueKeysWithValues: e.primary.map { ($0, 1.0) } + e.secondary.filter { !e.primary.contains($0) }.map { ($0, 0.4) }))
             VStack(alignment: .leading, spacing: 3) {
-                Text(e.name).font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+                Text(e.name).font(Font.fs(.subheadline, .semibold)).foregroundStyle(.white)
                 Text(Self.musclesText(e, library: library))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(2)
             }
@@ -182,12 +182,12 @@ struct ExerciseInfoView: View {
                 Card {
                     SectionHeader(title: "Muscles worked")
                     if muscles.primary.isEmpty && muscles.secondary.isEmpty {
-                        Text("The library doesn't know this exercise.").font(.footnote).foregroundStyle(Theme.secondary)
+                        Text("The library doesn't know this exercise.").font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
                     } else {
                         BodyMapView(levels: Dictionary(uniqueKeysWithValues: muscles.primary.map { ($0, 1.0) } + muscles.secondary.filter { !muscles.primary.contains($0) }.map { ($0, 0.4) }))
                         MuscleChips(primary: muscles.primary, secondary: muscles.secondary, library: library)
                         Text("Filled: the muscles that do most of the work. Outlined: the ones that help.\(equipment)")
-                            .font(.caption)
+                            .font(Font.fs(.caption))
                             .foregroundStyle(Theme.tertiary)
                     }
                 }
@@ -197,9 +197,9 @@ struct ExerciseInfoView: View {
                         SectionHeader(title: "Your sessions", subtitle: "\(sessions.count) logged in the last year")
                         ForEach(sessions.prefix(10)) { s in
                             HStack(alignment: .firstTextBaseline) {
-                                Text(Format.prettyDay(s.date, today: model.today)).font(.subheadline).foregroundStyle(Theme.secondary)
+                                Text(Format.prettyDay(s.date, today: model.today)).font(Font.fs(.subheadline)).foregroundStyle(Theme.secondary)
                                 Spacer()
-                                Text(LoggedSet.compact(s.sets)).font(.subheadline).multilineTextAlignment(.trailing)
+                                Text(LoggedSet.compact(s.sets)).font(Font.fs(.subheadline)).multilineTextAlignment(.trailing)
                             }
                         }
                     }

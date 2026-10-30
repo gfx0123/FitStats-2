@@ -1,2 +1,4 @@
 # UI tests to run on a push to ui-check, one per line (for example test10CoachTabs).
 # Empty: all of them. Keep it empty for the full run before a release.
+test02AllScreens
+test13BodyAge

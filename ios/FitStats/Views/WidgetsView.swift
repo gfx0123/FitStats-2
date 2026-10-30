@@ -125,7 +125,7 @@ struct WidgetsView: View {
     private func named(_ name: String, @ViewBuilder _ content: () -> some View) -> some View {
         VStack(spacing: 5) {
             content()
-            Text(name).font(.caption2.weight(.medium)).foregroundStyle(Theme.secondary)
+            Text(name).font(Font.fs(.caption2, .medium)).foregroundStyle(Theme.secondary)
         }
     }
 
@@ -152,11 +152,11 @@ struct WidgetsView: View {
     private func step(_ n: Int, _ text: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Text("\(n)")
-                .font(.caption.weight(.bold))
+                .font(Font.fs(.caption, .bold))
                 .foregroundStyle(.black)
                 .frame(width: 20, height: 20)
                 .background(Circle().fill(Theme.recoveryGreen))
-            Text(text).font(.subheadline)
+            Text(text).font(Font.fs(.subheadline))
         }
     }
 }

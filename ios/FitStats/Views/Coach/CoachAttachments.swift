@@ -65,10 +65,10 @@ struct FileChip: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "tablecells")
-                .font(.footnote.weight(.semibold))
+                .font(Font.fs(.footnote, .semibold))
                 .foregroundStyle(Theme.recoveryGreen)
             Text(name)
-                .font(.footnote.weight(.medium))
+                .font(Font.fs(.footnote, .medium))
                 .lineLimit(1)
                 .truncationMode(.middle)
             if let onRemove {

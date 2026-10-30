@@ -10,7 +10,7 @@ struct CoachPickerView: View {
         ScrollView {
             VStack(spacing: 12) {
                 Text("Every coach reads the same data and follows the same rules. Only how they talk to you differs.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 8)
@@ -38,21 +38,21 @@ struct CoachPickerView: View {
             CoachCharacter(persona: persona, size: 72)
             VStack(alignment: .leading, spacing: 5) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text(persona.name).font(.title3.weight(.bold)).foregroundStyle(.white)
+                    Text(persona.name).font(Font.fs(.title3, .bold)).foregroundStyle(.white)
                     Text(persona.tagline)
-                        .font(.caption.weight(.semibold))
+                        .font(Font.fs(.caption, .semibold))
                         .foregroundStyle(persona.color)
                     Spacer(minLength: 0)
                     Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                        .font(.title3)
+                        .font(Font.fs(.title3))
                         .foregroundStyle(selected ? persona.color : Theme.tertiary)
                 }
                 Text(persona.summary)
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("“\(persona.sample)”")
-                    .font(.footnote.italic())
+                    .font(Font.fs(.footnote).italic())
                     .foregroundStyle(.white.opacity(0.85))
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -61,7 +61,7 @@ struct CoachPickerView: View {
             }
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.card))
+        .background(Glass(cornerRadius: 20))
         .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous)
             .stroke(selected ? persona.color.opacity(0.8) : Theme.cardBorder, lineWidth: selected ? 1.5 : 1))
         .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))

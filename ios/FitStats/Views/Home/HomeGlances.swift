@@ -80,7 +80,7 @@ struct GlanceFrame<Content: View>: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .frame(height: HomeGlanceMetrics.height(for: typeSize))
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(bare ? Color.clear : Theme.card))
+        .background { if !bare { Glass(cornerRadius: 22) } }
         .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(bare ? Color.clear : Theme.cardBorder, lineWidth: 1))
         .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
@@ -121,10 +121,10 @@ struct GlanceHeader: View {
     private func row(_ note: String?, fixed: Bool) -> some View {
         HStack(spacing: 5) {
             Image(systemName: icon)
-                .font(.caption2.weight(.bold))
+                .font(Font.fs(.caption2, .bold))
                 .foregroundStyle(tint)
             Text(title.uppercased())
-                .font(.caption2.weight(.semibold))
+                .font(Font.fs(.caption2, .semibold))
                 .tracking(0.8)
                 .foregroundStyle(Theme.secondary)
                 .lineLimit(1)
@@ -133,7 +133,7 @@ struct GlanceHeader: View {
             Spacer(minLength: 4)
             if let note {
                 Text(note)
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.tertiary)
                     .lineLimit(1)
                     .fixedSize()
@@ -151,13 +151,13 @@ struct GlanceValue: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 3) {
             Text(value)
-                .font(Theme.number(size))
+                .font(Font.fredoka(size))
                 .foregroundStyle(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             if let unit, !unit.isEmpty {
                 Text(unit)
-                    .font(Theme.number(max(11, size * 0.42), weight: .semibold))
+                    .font(Font.fredoka(max(11, size * 0.42), weight: .semibold))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
             }
@@ -176,10 +176,10 @@ struct GlanceStat: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             FittingText(title, short: shortTitle ?? title)
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.secondary)
             Text(value)
-                .font(Theme.number(size))
+                .font(Font.fredoka(size))
                 .foregroundStyle(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
@@ -197,11 +197,11 @@ struct GlanceMessage: View {
             Spacer(minLength: 0)
             if let icon {
                 Image(systemName: icon)
-                    .font(.title3)
+                    .font(Font.fs(.title3))
                     .foregroundStyle(Theme.tertiary)
             }
             Text(text)
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.secondary)
                 .lineLimit(4)
             Spacer(minLength: 0)
@@ -220,7 +220,7 @@ struct TrendArrow: View {
         ZStack {
             if let change, change.isFinite, abs(change) >= 0.5 {
                 Image(systemName: change > 0 ? "arrow.up.right" : "arrow.down.right")
-                    .font(.caption2.weight(.bold))
+                    .font(Font.fs(.caption2, .bold))
                     .foregroundStyle(color(up: change > 0))
             }
         }
@@ -364,7 +364,7 @@ struct MiniBars: View {
                 HStack(spacing: 0) {
                     ForEach(Array(labels.enumerated()), id: \.offset) { _, label in
                         Text(label)
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(Font.fredoka(9, weight: .semibold))
                             .foregroundStyle(Theme.tertiary)
                             .frame(maxWidth: .infinity)
                     }
@@ -434,7 +434,7 @@ struct ScoresGlance: View {
                         Spacer(minLength: 0)
                         RingGauge(progress: (recovery ?? 0) / 100, color: Theme.recoveryColor(recovery), lineWidth: 10) {
                             Text(recovery.map { "\(Format.number($0))%" } ?? "–")
-                                .font(Theme.number(24))
+                                .font(Font.fredoka(24))
                                 .foregroundStyle(.white)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.6)
@@ -444,7 +444,7 @@ struct ScoresGlance: View {
                         Spacer(minLength: 0)
                     }
                     Text(recoveryCaption(day))
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -487,7 +487,7 @@ struct ScoresGlance: View {
                 RingGauge(progress: (value ?? 0) / 100, color: color, endColor: end, lineWidth: 7,
                           target: target.map { ($0.lowerBound / 100)...($0.upperBound / 100) }) {
                     Text(value.map { Format.number($0) + suffix } ?? "–")
-                        .font(Theme.number(16))
+                        .font(Font.fredoka(16))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
@@ -495,11 +495,11 @@ struct ScoresGlance: View {
                 }
                 .frame(width: 62, height: 62)
                 Text(title)
-                    .font(.caption2.weight(.semibold))
+                    .font(Font.fs(.caption2, .semibold))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
                 Text(caption ?? " ")
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.tertiary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -525,14 +525,14 @@ struct TonightGlance: View {
                 GlanceHeader(title: "Tonight", icon: "moon.stars.fill", tint: Theme.sleep)
                 Spacer(minLength: 0)
                 if size == .small {
-                    Text("In bed by").font(.caption).foregroundStyle(Theme.secondary)
+                    Text("In bed by").font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                     GlanceValue(value: bed, size: 30)
                     Text("Need \(Format.duration(plan.needMin))")
-                        .font(.caption.weight(.semibold))
+                        .font(Font.fs(.caption, .semibold))
                         .foregroundStyle(Theme.sleep)
                         .lineLimit(1)
                     Text("Wake at \(wake)")
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.tertiary)
                         .lineLimit(1)
                 } else {
@@ -545,7 +545,7 @@ struct TonightGlance: View {
                     }
                     Spacer(minLength: 0)
                     Text(parts(plan))
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.sleep)
                         .lineLimit(2)
                 }
@@ -582,13 +582,13 @@ struct JournalGlance: View {
                 } else {
                     Spacer(minLength: 0)
                     Image(systemName: "plus.circle.fill")
-                        .font(.title2)
+                        .font(Font.fs(.title2))
                         .foregroundStyle(Theme.stress)
                     Text(date == model.today ? "Log today" : "Log this day")
-                        .font(.subheadline.weight(.semibold))
+                        .font(Font.fs(.subheadline, .semibold))
                         .foregroundStyle(.white)
                     Text(loggedDaysText ?? "Tag caffeine, alcohol, a late meal and more.")
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.tertiary)
                         .lineLimit(2)
                 }
@@ -609,7 +609,7 @@ struct JournalGlance: View {
                 }
                 if entry.tags.count > limit {
                     Text("+\(entry.tags.count - limit)")
-                        .font(.caption.weight(.semibold))
+                        .font(Font.fs(.caption, .semibold))
                         .foregroundStyle(Theme.secondary)
                         .padding(.vertical, 4)
                 }
@@ -617,7 +617,7 @@ struct JournalGlance: View {
         }
         if !note.isEmpty {
             Text(note)
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.secondary)
                 .lineLimit(2)
         }
@@ -625,7 +625,7 @@ struct JournalGlance: View {
         if size == .medium {
             ForEach(Array(impactLines(entry).prefix(2)), id: \.self) { line in
                 Label(line, systemImage: "arrow.turn.down.right")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -719,16 +719,16 @@ struct VitalsGlance: View {
         NavigationLink(value: DetailRoute.metric(def.key)) {
             HStack(spacing: 6) {
                 Image(systemName: def.icon)
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(def.category.color)
                     .frame(width: 14)
                 Text(Self.tinyLabels[def.key] ?? def.shortLabel)
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
                 Spacer(minLength: 4)
                 Text(def.formatted(def.value(day)))
-                    .font(Theme.number(15, weight: .semibold))
+                    .font(Font.fredoka(15, weight: .semibold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -744,11 +744,11 @@ struct VitalsGlance: View {
         NavigationLink(value: DetailRoute.metric(def.key)) {
             VStack(alignment: .leading, spacing: 2) {
                 FittingText(def.shortLabel, short: def.compactLabel)
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.secondary)
                 HStack(spacing: 3) {
                     Text(def.formatted(def.value(day)))
-                        .font(Theme.number(16, weight: .semibold))
+                        .font(Font.fredoka(16, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
@@ -787,12 +787,12 @@ struct ActivityGlance: View {
                         RingGauge(progress: progress, color: Theme.strain, endColor: Theme.strainEnd, lineWidth: 9) {
                             VStack(spacing: 0) {
                                 Text(Format.number(steps))
-                                    .font(Theme.number(18))
+                                    .font(Font.fredoka(18))
                                     .foregroundStyle(.white)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.6)
                                 Text("steps")
-                                    .font(.caption2)
+                                    .font(Font.fs(.caption2))
                                     .foregroundStyle(Theme.secondary)
                             }
                             .padding(10)
@@ -801,7 +801,7 @@ struct ActivityGlance: View {
                         Spacer(minLength: 0)
                     }
                     Text("Goal \(Format.number(goal))")
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(Theme.tertiary)
                         .frame(maxWidth: .infinity)
                 } else {
@@ -812,7 +812,7 @@ struct ActivityGlance: View {
                             ProgressView(value: progress)
                                 .tint(Theme.strain)
                             Text("Goal \(Format.number(goal))")
-                                .font(.caption2)
+                                .font(Font.fs(.caption2))
                                 .foregroundStyle(Theme.tertiary)
                             if let day { comparison(day) }
                         }
@@ -850,7 +850,7 @@ struct ActivityGlance: View {
     private func line(_ text: String, _ change: Double?) -> some View {
         HStack(spacing: 4) {
             Text(text)
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -877,7 +877,7 @@ struct HeartRateGlance: View {
                 if size == .small {
                     GlanceValue(value: range, unit: "bpm", size: 22)
                     Text("Resting \(Format.number(rhr))")
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
                 } else {
                     HStack {
@@ -887,7 +887,7 @@ struct HeartRateGlance: View {
                             Text("\(latest.bpm) bpm at \(Format.clock(Double(latest.minute)))")
                         }
                     }
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
                 }
@@ -939,7 +939,7 @@ struct WorkoutsGlance: View {
             } else if exercises.isEmpty {
                 if size == .medium, let day = model.daysByDate[date], !dayStats(day).isEmpty {
                     Text(date == model.today ? "No workouts yet today." : "No workouts this day.")
-                        .font(.footnote)
+                        .font(Font.fs(.footnote))
                         .foregroundStyle(Theme.secondary)
                     Spacer(minLength: 0)
                     statRow(dayStats(day), title: date == model.today ? "Today so far" : "That day")
@@ -972,7 +972,7 @@ struct WorkoutsGlance: View {
                 if exercises.count > 2 {
                     NavigationLink(value: DetailRoute.homeCard(HomeCardSpec(.workouts), date)) {
                         Text("+\(exercises.count - 2) more")
-                            .font(.caption.weight(.semibold))
+                            .font(Font.fs(.caption, .semibold))
                             .foregroundStyle(Theme.strain)
                     }
                     .buttonStyle(.plain)
@@ -1005,7 +1005,7 @@ struct WorkoutsGlance: View {
         VStack(alignment: .leading, spacing: 4) {
             if let title {
                 Text(title.uppercased())
-                    .font(.caption2.weight(.semibold))
+                    .font(Font.fs(.caption2, .semibold))
                     .tracking(0.6)
                     .foregroundStyle(Theme.tertiary)
             }
@@ -1022,29 +1022,29 @@ struct WorkoutsGlance: View {
     private func smallWorkout(_ x: Exercise, more: Int) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Image(systemName: x.symbol)
-                .font(.title3)
+                .font(Font.fs(.title3))
                 .foregroundStyle(Theme.strain)
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(Theme.strain.opacity(0.18)))
             Text(x.displayName)
-                .font(.subheadline.weight(.semibold))
+                .font(Font.fs(.subheadline, .semibold))
                 .foregroundStyle(.white)
                 .lineLimit(1)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(x.durationText)
-                    .font(Theme.number(18))
+                    .font(Font.fredoka(18))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                 if let strain = x.strain {
                     Text("strain \(Format.number(strain, decimals: 1))")
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(Theme.tertiary)
                         .lineLimit(1)
                 }
             }
             if more > 0 {
                 Text("+\(more) more")
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.tertiary)
             }
             Spacer(minLength: 0)
@@ -1085,14 +1085,14 @@ struct LastNightGlance: View {
                     if size == .medium { DeltaBadge(change: change(asleep), better: .higher) }
                 }
                 Text(window(day))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 if size == .small {
                     Text(score.map { "Sleep score \(Format.number($0))" } ?? "No sleep score")
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(Theme.tertiary)
                 }
             }
@@ -1100,7 +1100,7 @@ struct LastNightGlance: View {
                 Spacer(minLength: 8)
                 RingGauge(progress: min(1, max(0, (score ?? 0) / 100)), color: Theme.sleep, lineWidth: 6) {
                     Text(score.map { Format.number($0) } ?? "–")
-                        .font(Theme.number(17))
+                        .font(Font.fredoka(17))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
@@ -1118,7 +1118,7 @@ struct LastNightGlance: View {
                         HStack(spacing: 3) {
                             Circle().fill(part.color).frame(width: 6, height: 6)
                             Text("\(part.name) \(Format.duration(part.minutes))")
-                                .font(.caption2)
+                                .font(Font.fs(.caption2))
                                 .foregroundStyle(Theme.secondary)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
@@ -1177,17 +1177,17 @@ struct RecoveryTrendGlance: View {
                         VStack(alignment: .leading, spacing: 1) {
                             GlanceValue(value: Format.number(average), unit: "%", size: 28)
                             Text("average")
-                                .font(.caption2)
+                                .font(Font.fs(.caption2))
                                 .foregroundStyle(Theme.secondary)
                         }
                         Spacer(minLength: 4)
                         if size == .medium {
                             VStack(alignment: .trailing, spacing: 1) {
                                 Text(latest.map { "\(Format.number($0))%" } ?? "–")
-                                    .font(Theme.number(20, weight: .semibold))
+                                    .font(Font.fredoka(20, weight: .semibold))
                                     .foregroundStyle(Theme.recoveryColor(latest))
                                 Text(Format.prettyDay(date, today: model.today))
-                                    .font(.caption2)
+                                    .font(Font.fs(.caption2))
                                     .foregroundStyle(Theme.secondary)
                             }
                         }
@@ -1237,14 +1237,14 @@ struct MetricTrendGlance: View {
                         Spacer(minLength: 0)
                         if size == .medium, let base {
                             Text("30-day avg \(def.formatted(base))")
-                                .font(.caption)
+                                .font(Font.fs(.caption))
                                 .foregroundStyle(Theme.secondary)
                                 .lineLimit(1)
                         }
                     }
                     if size == .small {
                         Text(base.map { "Avg \(def.formatted($0))" } ?? "Building your average")
-                            .font(.caption2)
+                            .font(Font.fs(.caption2))
                             .foregroundStyle(Theme.secondary)
                             .lineLimit(1)
                     }
@@ -1274,13 +1274,13 @@ struct StressGlance: View {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         GlanceValue(value: Format.number(score), size: 30, color: Theme.stressColor(score))
                         Text(Theme.stressLabel(score))
-                            .font(.caption.weight(.semibold))
+                            .font(Font.fs(.caption, .semibold))
                             .foregroundStyle(Theme.secondary)
                             .lineLimit(1)
                         Spacer(minLength: 0)
                         if size == .medium, let peak = Self.peak(hourly) {
                             Text("Highest \(Format.clock(Double(peak * 60)))–\(Format.clock(Double(peak * 60 + 60)))")
-                                .font(.caption)
+                                .font(Font.fs(.caption))
                                 .foregroundStyle(Theme.secondary)
                                 .lineLimit(1)
                         }
@@ -1346,12 +1346,12 @@ struct ThisWeekGlance: View {
                         let week = summary(def)
                         HStack(spacing: 6) {
                             Text(def.shortLabel)
-                                .font(.caption)
+                                .font(Font.fs(.caption))
                                 .foregroundStyle(Theme.secondary)
                                 .lineLimit(1)
                             Spacer(minLength: 4)
                             Text(def.formatted(week.value))
-                                .font(Theme.number(14, weight: .semibold))
+                                .font(Font.fredoka(14, weight: .semibold))
                                 .foregroundStyle(.white)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.7)
@@ -1367,12 +1367,12 @@ struct ThisWeekGlance: View {
                             let week = summary(def)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(def.shortLabel)
-                                    .font(.caption2)
+                                    .font(Font.fs(.caption2))
                                     .foregroundStyle(Theme.secondary)
                                     .lineLimit(1)
                                 HStack(spacing: 3) {
                                     Text(def.formatted(week.value))
-                                        .font(Theme.number(16, weight: .semibold))
+                                        .font(Font.fredoka(16, weight: .semibold))
                                         .foregroundStyle(.white)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.7)
@@ -1435,12 +1435,12 @@ struct ZoneMinutesGlance: View {
                         RingGauge(progress: progress, color: Theme.heart, lineWidth: 9) {
                             VStack(spacing: 0) {
                                 Text(Format.number(total))
-                                    .font(Theme.number(22))
+                                    .font(Font.fredoka(22))
                                     .foregroundStyle(.white)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.6)
                                 Text("of \(Format.number(Self.target))")
-                                    .font(.caption2)
+                                    .font(Font.fs(.caption2))
                                     .foregroundStyle(Theme.secondary)
                             }
                             .padding(10)
@@ -1454,10 +1454,10 @@ struct ZoneMinutesGlance: View {
                         VStack(alignment: .leading, spacing: 3) {
                             GlanceValue(value: Format.number(total), unit: "min", size: 30)
                             Text("of \(Format.number(Self.target)) a week")
-                                .font(.caption)
+                                .font(Font.fs(.caption))
                                 .foregroundStyle(Theme.secondary)
                             Text("\(Int((progress * 100).rounded()))%")
-                                .font(.caption.weight(.semibold))
+                                .font(Font.fs(.caption, .semibold))
                                 .foregroundStyle(total >= Self.target ? Theme.recoveryGreen : Theme.heart)
                         }
                         MiniBars(values: values, maxValue: scale, labels: dates.map { Format.weekdayLetter($0) }) { _ in Theme.heart }
@@ -1492,15 +1492,15 @@ struct StreaksGlance: View {
                     Spacer(minLength: 0)
                     GlanceValue(value: "\(top.current)", unit: top.current == 1 ? "day" : "days", size: 34, color: Theme.recoveryYellow)
                     Text(top.label)
-                        .font(.caption.weight(.semibold))
+                        .font(Font.fs(.caption, .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(2)
                     Text("Best \(top.longest)")
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(Theme.tertiary)
                     if streaks.count > 1 {
                         Text("+\(streaks.count - 1) more")
-                            .font(.caption2)
+                            .font(Font.fs(.caption2))
                             .foregroundStyle(Theme.tertiary)
                     }
                 } else {
@@ -1508,19 +1508,19 @@ struct StreaksGlance: View {
                         ForEach(Array(streaks.prefix(4))) { s in
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(s.label)
-                                    .font(.caption2)
+                                    .font(Font.fs(.caption2))
                                     .foregroundStyle(Theme.secondary)
                                     .lineLimit(1)
                                 HStack(alignment: .firstTextBaseline, spacing: 3) {
                                     Text("\(s.current)")
-                                        .font(Theme.number(20))
+                                        .font(Font.fredoka(20))
                                         .foregroundStyle(s.current > 0 ? Theme.recoveryYellow : Theme.tertiary)
                                     Text(s.current == 1 ? "day" : "days")
-                                        .font(.caption2)
+                                        .font(Font.fs(.caption2))
                                         .foregroundStyle(Theme.secondary)
                                     Spacer(minLength: 2)
                                     Text("best \(s.longest)")
-                                        .font(.caption2)
+                                        .font(Font.fs(.caption2))
                                         .foregroundStyle(Theme.tertiary)
                                         .lineLimit(1)
                                 }
@@ -1550,11 +1550,11 @@ struct InsightGlance: View {
                     ForEach(Array(insights.prefix(2))) { insight in
                         VStack(alignment: .leading, spacing: 2) {
                             Text(insight.title)
-                                .font(.subheadline.weight(.semibold))
+                                .font(Font.fs(.subheadline, .semibold))
                                 .foregroundStyle(.white)
                                 .lineLimit(1)
                             Text(insight.body)
-                                .font(.caption)
+                                .font(Font.fs(.caption))
                                 .foregroundStyle(Theme.secondary)
                                 .lineLimit(2)
                         }
@@ -1562,11 +1562,11 @@ struct InsightGlance: View {
                     Spacer(minLength: 0)
                 } else if let first {
                     Text(first.title)
-                        .font(.subheadline.weight(.semibold))
+                        .font(Font.fs(.subheadline, .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(2)
                     Text(first.body)
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
                         .lineLimit(4)
                     Spacer(minLength: 0)
@@ -1607,13 +1607,13 @@ struct CoachGlance: View {
                     HStack(spacing: 8) {
                         ProgressView()
                         Text("Writing today's briefing…")
-                            .font(.footnote)
+                            .font(Font.fs(.footnote))
                             .foregroundStyle(Theme.secondary)
                     }
                     Spacer(minLength: 0)
                 } else if let brief {
                     Text(Self.preview(brief.text))
-                        .font(.footnote)
+                        .font(Font.fs(.footnote))
                         .foregroundStyle(.white.opacity(0.9))
                         .lineLimit(size == .small ? 7 : 5)
                     Spacer(minLength: 0)
@@ -1677,7 +1677,7 @@ struct BodyGlance: View {
                     }
                     if size == .small, let fatDef, let fat {
                         Text("Body fat \(fatDef.formatted(fat.value))")
-                            .font(.caption)
+                            .font(Font.fs(.caption))
                             .foregroundStyle(Theme.secondary)
                             .lineLimit(1)
                     }
@@ -1745,7 +1745,7 @@ struct LoadGlance: View {
                         LoadStatusPill(status: load.status)
                         GlanceValue(value: Format.signed(latest.form, decimals: 1), unit: "form", size: 26)
                         Text("Fitness \(Format.number(latest.ctl, decimals: 1)) · Fatigue \(Format.number(latest.atl, decimals: 1))")
-                            .font(.caption2)
+                            .font(Font.fs(.caption2))
                             .foregroundStyle(Theme.secondary)
                             .lineLimit(2)
                     } else {
@@ -1799,16 +1799,16 @@ struct LiveHeartRateGlance: View {
                                 .foregroundStyle(isLive ? Theme.heart : Theme.tertiary)
                                 .symbolEffect(.bounce, value: live.samples.last?.id ?? 0)
                             Text(bpmText)
-                                .font(Theme.number(38))
+                                .font(Font.fredoka(38))
                                 .foregroundStyle(.white)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.6)
                             Text("bpm")
-                                .font(.caption)
+                                .font(Font.fs(.caption))
                                 .foregroundStyle(Theme.secondary)
                         }
                         Text(caption)
-                            .font(.caption)
+                            .font(Font.fs(.caption))
                             .foregroundStyle(Theme.tertiary)
                             .lineLimit(size == .small ? 3 : 2)
                     }
@@ -1952,7 +1952,7 @@ struct MetricGlance: View {
                         }
                     }
                     Text(caption(m, day: shown.day))
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(Theme.secondary)
                         .lineLimit(1)
                     chart(m, tint: tint)

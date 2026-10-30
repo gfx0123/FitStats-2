@@ -146,7 +146,7 @@ struct CalendarHeatmapView: View {
                     SectionHeader(title: def.label, subtitle: subtitle(weeks, counted: counted.count))
                     if weeks.isEmpty {
                         Text("No data yet. The calendar fills in after the first sync.")
-                            .font(.footnote)
+                            .font(Font.fs(.footnote))
                             .foregroundStyle(Theme.secondary)
                     } else {
                         grid(weeks, scale: scale, cell: Self.cellSize(width: gridWidth, weeks: weeks.count))
@@ -164,7 +164,7 @@ struct CalendarHeatmapView: View {
                 .accessibilityIdentifier("calendar-heatmap")
 
                 Text(footnote(def))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
             }
             .padding(.horizontal, 16)
@@ -212,7 +212,7 @@ struct CalendarHeatmapView: View {
             Color.clear.frame(width: 10, height: Self.monthRow)
             ForEach(0..<7, id: \.self) { i in
                 Text(letters[i])
-                    .font(.system(size: 9, weight: .medium))
+                    .font(Font.fredoka(9, weight: .medium))
                     .foregroundStyle(Theme.tertiary)
                     .frame(width: 10, height: size)
             }
@@ -227,7 +227,7 @@ struct CalendarHeatmapView: View {
                 .overlay(alignment: .leading) {
                     if let month = monthLabel(week, weeks: weeks) {
                         Text(month)
-                            .font(.caption2)
+                            .font(Font.fs(.caption2))
                             .foregroundStyle(Theme.tertiary)
                             .fixedSize()
                     }
@@ -289,13 +289,13 @@ struct CalendarHeatmapView: View {
                 swatch(Theme.recoveryGreen, "67–100")
             } else {
                 HStack(spacing: 3) {
-                    Text("Less").font(.caption2).foregroundStyle(Theme.tertiary)
+                    Text("Less").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                     ForEach(0..<HeatmapScale.opacities.count, id: \.self) { i in
                         RoundedRectangle(cornerRadius: 3, style: .continuous)
                             .fill(metric.color.opacity(HeatmapScale.opacities[i]))
                             .frame(width: 12, height: 12)
                     }
-                    Text("More").font(.caption2).foregroundStyle(Theme.tertiary)
+                    Text("More").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                 }
             }
             swatch(Theme.track, "No data")
@@ -304,14 +304,14 @@ struct CalendarHeatmapView: View {
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
                         .strokeBorder(metric.color.opacity(0.8), lineWidth: 1.5)
                         .frame(width: 12, height: 12)
-                    Text("Not counted").font(.caption2).foregroundStyle(Theme.secondary)
+                    Text("Not counted").font(Font.fs(.caption2)).foregroundStyle(Theme.secondary)
                 }
             }
         }
         .accessibilityElement(children: .combine)
         if metric != .recovery, let q = scale.quartiles {
             Text("Shades split at your quartiles: \(def.formatted(q[0])), \(def.formatted(q[1])) and \(def.formatted(q[2])).")
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -319,7 +319,7 @@ struct CalendarHeatmapView: View {
     private func swatch(_ color: Color, _ label: String) -> some View {
         HStack(spacing: 4) {
             RoundedRectangle(cornerRadius: 3, style: .continuous).fill(color).frame(width: 12, height: 12)
-            Text(label).font(.caption2).foregroundStyle(Theme.secondary)
+            Text(label).font(Font.fs(.caption2)).foregroundStyle(Theme.secondary)
         }
     }
 

@@ -31,11 +31,11 @@ struct TrainingLoadHomeCard: View {
                 TrainingLoadChart(series: load.series, days: 42, height: 90)
                 if load.status == "calibrating" {
                     Text(TrainingLoadStatus.calibratingText(load, today: model.stats?.today ?? model.today))
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.tertiary)
                 } else if load.spike {
                     Label("Load spike: your last 7 days averaged at least 1.5 times your last 28.", systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.recoveryRed)
                 }
             } else {
@@ -46,9 +46,9 @@ struct TrainingLoadHomeCard: View {
 
     private func figure(_ title: String, _ value: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.caption).foregroundStyle(Theme.secondary)
+            Text(title).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
             Text(value)
-                .font(Theme.number(22))
+                .font(Font.fredoka(22))
                 .foregroundStyle(color)
                 .lineLimit(1)
         }

@@ -45,12 +45,12 @@ struct InsightsView: View {
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                 ForEach(streaks) { s in
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(s.label).font(.caption).foregroundStyle(Theme.secondary).lineLimit(2)
+                        Text(s.label).font(Font.fs(.caption)).foregroundStyle(Theme.secondary).lineLimit(2)
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
-                            Text("\(s.current)").font(Theme.number(26))
-                            Text(s.current == 1 ? "day" : "days").font(.caption).foregroundStyle(Theme.secondary)
+                            Text("\(s.current)").font(Font.fredoka(26))
+                            Text(s.current == 1 ? "day" : "days").font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                         }
-                        Text("Best \(s.longest)").font(.caption2).foregroundStyle(Theme.tertiary)
+                        Text("Best \(s.longest)").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                     }
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -71,7 +71,7 @@ struct InsightsView: View {
                 .buttonStyle(.plain)
             }
             Text("Correlation shows that two things move together, not that one causes the other. At least 14 days are needed.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -92,13 +92,13 @@ private struct InsightCard: View {
         HStack(alignment: .top, spacing: 12) {
             RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 4)
             VStack(alignment: .leading, spacing: 4) {
-                Text(insight.title).font(.subheadline.weight(.semibold))
-                Text(insight.body).font(.footnote).foregroundStyle(Theme.secondary)
+                Text(insight.title).font(Font.fs(.subheadline, .semibold))
+                Text(insight.body).font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
             }
             Spacer(minLength: 0)
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.card))
+        .background(Glass(cornerRadius: 22))
         .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Theme.cardBorder, lineWidth: 1))
     }
 }
@@ -109,14 +109,14 @@ private struct CorrelationRow: View {
     var body: some View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(correlation.title).font(.subheadline).lineLimit(2)
-                Text(detail).font(.caption2).foregroundStyle(Theme.tertiary)
+                Text(correlation.title).font(Font.fs(.subheadline)).lineLimit(2)
+                Text(detail).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
             }
             Spacer()
             Text(correlation.r.map { String(format: "%+.2f", $0) } ?? "–")
-                .font(Theme.number(16, weight: .semibold))
+                .font(Font.fredoka(16, weight: .semibold))
                 .foregroundStyle(color)
-            Image(systemName: "chevron.right").font(.caption2).foregroundStyle(Theme.tertiary)
+            Image(systemName: "chevron.right").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
         }
         .padding(.vertical, 6)
         .contentShape(Rectangle())
@@ -157,7 +157,7 @@ struct CorrelationDetailView: View {
                         }
                     }
                     Text(explanation(xDef, yDef))
-                        .font(.footnote)
+                        .font(Font.fs(.footnote))
                         .foregroundStyle(Theme.secondary)
                 }
             }

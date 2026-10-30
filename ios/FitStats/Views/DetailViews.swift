@@ -11,7 +11,7 @@ private struct DetailScaffold<Content: View>: View {
         ScrollView {
             VStack(spacing: 14) {
                 Text(Format.longDay(date))
-                    .font(.subheadline)
+                    .font(Font.fs(.subheadline))
                     .foregroundStyle(Theme.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 content()
@@ -40,7 +40,7 @@ private struct BreakdownCard: View {
         Card {
             SectionHeader(title: "What went into it")
             if breakdown.components.isEmpty {
-                Text(emptyText).font(.footnote).foregroundStyle(Theme.secondary)
+                Text(emptyText).font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
             } else {
                 ForEach(breakdown.components) { ComponentBar(component: $0, color: color) }
             }
@@ -64,13 +64,13 @@ private struct TrendCard: View {
                 SectionHeader(title: "\(def.label) · \(days) days")
                 Spacer()
                 if let mean {
-                    Text("avg \(def.formatted(mean))").font(.caption).foregroundStyle(Theme.secondary)
+                    Text("avg \(def.formatted(mean))").font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                 }
             }
             if points.count >= 2 {
                 DailyMetricChart(points: points, def: def, average: referenceLine ?? mean, color: color, height: 160)
             } else {
-                Text("Not enough data yet.").font(.footnote).foregroundStyle(Theme.tertiary)
+                Text("Not enough data yet.").font(Font.fs(.footnote)).foregroundStyle(Theme.tertiary)
             }
         }
     }
@@ -93,8 +93,8 @@ struct RecoveryDetailView: View {
                               caption: value == nil ? statusText(breakdown.status) : Theme.recoveryLabel(value),
                               size: 140, lineWidth: 15, suffix: "%")
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(Theme.recoveryLabel(value)).font(.headline)
-                        Text(advice(value)).font(.footnote).foregroundStyle(Theme.secondary)
+                        Text(Theme.recoveryLabel(value)).font(Font.fs(.headline))
+                        Text(advice(value)).font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
                     }
                 }
                 if let why = breakdown.recoveryWhy { ScoreWhyLine(why: why) }
@@ -105,7 +105,7 @@ struct RecoveryDetailView: View {
             TrendCard(def: MetricCatalog.def("hrv_rmssd")!, endDate: date, color: Theme.heart)
             TrendCard(def: MetricCatalog.def("rhr")!, endDate: date, color: Theme.heart)
             Text("Recovery is FitStats' own estimate (HRV 45%, resting HR 25%, sleep 20%, skin temperature and breathing 10%), compared with your last 30 nights. It is not Bevel's or Fitbit's score and not a medical measure.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -255,7 +255,7 @@ struct StrainDetailView: View {
             }
             TrendCard(def: MetricCatalog.def("strain")!, endDate: date, color: Theme.strain)
             Text("Strain is FitStats' own 0\u{2060}–\u{2060}100 scale: 100 × (1 − e^(−TRIMP/120)), where TRIMP is Banister's training impulse from your minute heart rate (minutes above 30% of heart-rate reserve).")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -285,9 +285,9 @@ struct ZoneBars: View {
     private func bar(_ label: String, range: String?, value: Double, color: Color, maxValue: Double) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 0) {
-                Text(label).font(.caption.bold())
+                Text(label).font(Font.fs(.caption, .bold))
                 if let range {
-                    Text(range).font(.caption2).foregroundStyle(Theme.tertiary)
+                    Text(range).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                 }
             }
             .frame(width: 52, alignment: .leading)
@@ -301,7 +301,7 @@ struct ZoneBars: View {
             }
             .frame(height: 8)
             Text(Format.duration(value))
-                .font(.caption.monospacedDigit())
+                .font(Font.fs(.caption).monospacedDigit())
                 .frame(width: 64, alignment: .trailing)
         }
     }
@@ -325,7 +325,7 @@ struct StressDetailView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         KeyValueRow(key: "Minutes", value: Format.number(day?.double("stress_minutes")))
                         Text("Only minutes when you were awake, still and not exercising count.")
-                            .font(.caption)
+                            .font(Font.fs(.caption))
                             .foregroundStyle(Theme.secondary)
                     }
                 }
@@ -338,7 +338,7 @@ struct StressDetailView: View {
             }
             TrendCard(def: MetricCatalog.def("stress")!, endDate: date, color: Theme.stress)
             Text("Google Health does not provide daytime HRV, so FitStats estimates stress from how far your heart rate sits above your usual still heart rate while you are awake, still and not exercising or recovering from a workout: each minute scores 0 at or below your usual level (the median of the last 30 days) and 100 at 15% of heart-rate reserve above it. It is an estimate, not a medical measure.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }

@@ -10,9 +10,9 @@ struct ConnectView: View {
                 Spacer(minLength: 36)
                 logo
                 VStack(spacing: 8) {
-                    Text("FitStats").font(Theme.number(38))
+                    Text("FitStats").font(Font.fredoka(38))
                     Text("Recovery, strain, sleep and stress from your Fitbit — and every metric turned into statistics.")
-                        .font(.subheadline)
+                        .font(Font.fs(.subheadline))
                         .foregroundStyle(Theme.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -28,7 +28,7 @@ struct ConnectView: View {
                 } label: {
                     HStack(spacing: 10) {
                         if working { ProgressView().tint(.black) }
-                        Text("Connect Google Health").font(.headline)
+                        Text("Connect Google Health").font(Font.fs(.headline))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
@@ -38,7 +38,7 @@ struct ConnectView: View {
                 .disabled(working)
                 checklist
                 Text("While your Google Cloud app is in Testing mode, Google ends access after 7 days. When that happens FitStats shows a Reconnect button.")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
                     .multilineTextAlignment(.center)
             }
@@ -65,7 +65,7 @@ struct ConnectView: View {
             step(2, "Its Client ID and secret saved in Supabase as GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.")
             step(3, "Your Google account added as a test user.")
             Text("Step-by-step instructions are in SETUP.md in the repository.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -73,10 +73,10 @@ struct ConnectView: View {
     private func step(_ n: Int, _ text: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Text("\(n)")
-                .font(.caption.bold())
+                .font(Font.fs(.caption, .bold))
                 .frame(width: 22, height: 22)
                 .background(Circle().fill(Theme.track))
-            Text(text).font(.footnote).foregroundStyle(Theme.secondary)
+            Text(text).font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
         }
     }
 }

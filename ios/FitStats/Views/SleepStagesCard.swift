@@ -20,14 +20,14 @@ struct SleepStagesCard: View {
             HypnogramView(layout: layout, zone: model.zone) { scrubbed = $0 }
             CompositionBar(parts: stages.compactMap { s in s.minutes.map { (s.color, $0) } })
             if !layout.classic, let restorative = restorativeText {
-                Text(restorative).font(.caption).foregroundStyle(Theme.secondary)
+                Text(restorative).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
             }
             VStack(spacing: 14) {
                 ForEach(stages) { StageRow(info: $0) }
             }
             .padding(.top, 2)
             Text("Shares are of time asleep; the white tick is your average over the previous 30 nights. Tap the chart to read a stage.")
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
         }
         .sensoryFeedback(.selection, trigger: scrubbed)
@@ -39,10 +39,10 @@ struct SleepStagesCard: View {
                 Circle().fill(layout.color(of: s.code)).frame(width: 7, height: 7)
                 Text("\(layout.name(of: s.code)) · \(Format.time(s.start, zone: model.zone))–\(Format.time(s.end, zone: model.zone)) · \(Format.duration(s.minutes))")
             }
-            .font(.caption.weight(.semibold).monospacedDigit())
+            .font(Font.fs(.caption, .semibold).monospacedDigit())
         } else {
             Text("\(Format.time(layout.start, zone: model.zone)) – \(Format.time(layout.end, zone: model.zone))")
-                .font(.caption.monospacedDigit())
+                .font(Font.fs(.caption).monospacedDigit())
                 .foregroundStyle(Theme.secondary)
         }
     }
@@ -154,23 +154,23 @@ private struct StageRow: View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Circle().fill(info.color).frame(width: 8, height: 8)
-                Text(info.name).font(.subheadline.weight(.medium))
+                Text(info.name).font(Font.fs(.subheadline, .medium))
                 Spacer()
-                Text(Format.duration(info.minutes)).font(Theme.number(16, weight: .semibold))
+                Text(Format.duration(info.minutes)).font(Font.fredoka(16, weight: .semibold))
             }
             if let share = info.share {
                 HStack(spacing: 10) {
                     ShareTrack(value: share, average: info.average, color: info.color)
                     Text("\(Int((share * 100).rounded()))%")
-                        .font(.caption.weight(.semibold).monospacedDigit())
+                        .font(Font.fs(.caption, .semibold).monospacedDigit())
                         .frame(width: 34, alignment: .trailing)
                     Text(info.average.map { "avg \(Int(($0 * 100).rounded()))%" } ?? "")
-                        .font(.caption2.monospacedDigit())
+                        .font(Font.fs(.caption2).monospacedDigit())
                         .foregroundStyle(Theme.tertiary)
                         .frame(width: 50, alignment: .trailing)
                 }
             } else if let note = info.note, !note.isEmpty {
-                Text(note).font(.caption).foregroundStyle(Theme.secondary).padding(.leading, 16)
+                Text(note).font(Font.fs(.caption)).foregroundStyle(Theme.secondary).padding(.leading, 16)
             }
         }
     }

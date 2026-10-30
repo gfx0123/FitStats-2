@@ -49,10 +49,10 @@ struct HomeAddSection: View {
                 onReset()
             } label: {
                 Label("Reset Home to default", systemImage: "arrow.counterclockwise")
-                    .font(.subheadline.weight(.semibold))
+                    .font(Font.fs(.subheadline, .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.card))
+                    .background(Glass(cornerRadius: 14))
             }
             .buttonStyle(.plain)
             .foregroundStyle(isDefault ? Theme.tertiary : .white)
@@ -72,19 +72,19 @@ struct HomeAddSection: View {
         return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 12) {
                 Image(systemName: card.icon)
-                    .font(.subheadline.weight(.semibold))
+                    .font(Font.fs(.subheadline, .semibold))
                     .foregroundStyle(Theme.recoveryGreen)
                     .frame(width: 32, height: 32)
                     .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Theme.recoveryGreen.opacity(0.14)))
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(card.title)
-                            .font(.subheadline.weight(.semibold))
+                            .font(Font.fs(.subheadline, .semibold))
                             .foregroundStyle(.white)
                             .lineLimit(1)
                         if card.todayOnly {
                             Text("Today only")
-                                .font(.caption2.weight(.semibold))
+                                .font(Font.fs(.caption2, .semibold))
                                 .foregroundStyle(Theme.secondary)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
@@ -92,7 +92,7 @@ struct HomeAddSection: View {
                         }
                     }
                     Text(card.subtitle)
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
                         .lineLimit(2)
                 }
@@ -101,7 +101,7 @@ struct HomeAddSection: View {
                     add(card, size: chosen)
                 } label: {
                     Label("Add", systemImage: "plus")
-                        .font(.subheadline.weight(.semibold))
+                        .font(Font.fs(.subheadline, .semibold))
                 }
                 .buttonStyle(.bordered)
                 .tint(Theme.recoveryGreen)

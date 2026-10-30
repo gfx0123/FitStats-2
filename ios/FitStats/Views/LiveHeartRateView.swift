@@ -77,28 +77,28 @@ struct LiveHeartRateView: View {
         Card {
             HStack(alignment: .center, spacing: 16) {
                 Image(systemName: "heart.fill")
-                    .font(.system(size: 40))
+                    .font(Font.fredoka(40, weight: .regular))
                     .foregroundStyle(zone.map(\.color) ?? Theme.tertiary)
                     .symbolEffect(.bounce, value: live.samples.last?.id ?? 0)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(current.map { "\($0)" } ?? "–").font(Theme.number(64))
-                        Text("bpm").font(.title3).foregroundStyle(Theme.secondary)
+                        Text(current.map { "\($0)" } ?? "–").font(Font.fredoka(64))
+                        Text("bpm").font(Font.fs(.title3)).foregroundStyle(Theme.secondary)
                     }
                     if let zone, current != nil {
                         Text("\(zone.name) · \(Int((zone.reserve * 100).rounded()))% of heart-rate reserve")
-                            .font(.footnote)
+                            .font(Font.fs(.footnote))
                             .foregroundStyle(zone.color)
                     }
                 }
                 Spacer(minLength: 0)
             }
-            Text(statusText).font(.footnote).foregroundStyle(Theme.secondary)
+            Text(statusText).font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
             if case .unauthorized = live.state {
                 Button("Open Settings") {
                     if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                 }
-                .font(.footnote.weight(.semibold))
+                .font(Font.fs(.footnote, .semibold))
             }
         }
     }
@@ -161,11 +161,11 @@ struct LiveHeartRateView: View {
             if live.sendsRR {
                 KeyValueRow(key: "Live HRV (RMSSD, last minute)", value: live.liveRMSSD.map { "\(Int($0.rounded())) ms" } ?? "measuring…")
                 Text("From the beat-to-beat intervals the band sends. Sitting still gives the steadiest reading; it isn't comparable with your overnight HRV.")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
             } else if live.samples.count >= 10 {
                 Text("Your band sends heart rate only, no beat-to-beat intervals, so there is no live HRV.")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
             }
         }
@@ -182,7 +182,7 @@ struct LiveHeartRateView: View {
                         Image(systemName: "heart.circle").foregroundStyle(Theme.heart)
                         Text(device.name).foregroundStyle(.white)
                         Spacer()
-                        Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.tertiary)
+                        Image(systemName: "chevron.right").font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
                     }
                     .contentShape(Rectangle())
                 }
@@ -195,10 +195,10 @@ struct LiveHeartRateView: View {
         Card {
             SectionHeader(title: "How to connect")
             Text("In the Google Health app, open Fitbit Air → Share heart rate. Turn on Always visible, or keep that screen open while FitStats connects. FitStats remembers your band after that.")
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.secondary)
             Text("Live heart rate works only while FitStats is open and the band is nearby. It isn't saved; your history still comes from Google after the band syncs.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }

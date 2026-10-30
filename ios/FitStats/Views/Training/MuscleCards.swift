@@ -17,20 +17,20 @@ struct MusclesWeekCard: View {
                 SectionHeader(title: "Muscles · last 7 days", subtitle: "Done sets in the workouts you logged")
                 Spacer()
                 NavigationLink(value: TrainingRoute.library) {
-                    Label("Library", systemImage: "books.vertical").font(.caption.weight(.semibold))
+                    Label("Library", systemImage: "books.vertical").font(Font.fs(.caption, .semibold))
                 }
                 .accessibilityIdentifier("training-library")
             }
             BodyMapView(levels: sets.mapValues(Self.level))
             if sets.isEmpty {
                 Text("Log a workout and the muscles it works light up here.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
             } else {
                 FlowLayout(spacing: 6) {
                     ForEach(MuscleCount.sorted(sets).prefix(5)) { item in
                         Text("\(library.label(item.id)) \(Self.setsText(item.sets))")
-                            .font(.caption.weight(.semibold))
+                            .font(Font.fs(.caption, .semibold))
                             .padding(.horizontal, 9)
                             .padding(.vertical, 4)
                             .background(Capsule().fill(Theme.muscle.opacity(0.18)))
@@ -40,7 +40,7 @@ struct MusclesWeekCard: View {
                 let missing = Self.major.filter { (sets[$0] ?? 0) == 0 }
                 if !missing.isEmpty {
                     Text("No sets yet: \(missing.map(library.label).joined(separator: ", ")).")
-                        .font(.footnote)
+                        .font(Font.fs(.footnote))
                         .foregroundStyle(Theme.secondary)
                 }
             }
@@ -65,13 +65,13 @@ struct MusclesWeekCard: View {
             ForEach(MuscleCount.legend) { step in
                 HStack(spacing: 4) {
                     RoundedRectangle(cornerRadius: 3).fill(Theme.muscle.opacity(0.25 + 0.75 * step.sets)).frame(width: 12, height: 12)
-                    Text(step.id).font(.caption2).foregroundStyle(Theme.tertiary)
+                    Text(step.id).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                 }
             }
             Spacer(minLength: 0)
         }
         .overlay(alignment: .trailing) {
-            Text("helpers count ½").font(.caption2).foregroundStyle(Theme.tertiary)
+            Text("helpers count ½").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
         }
     }
 }
@@ -91,7 +91,7 @@ struct WorkoutMusclesCard: View {
                 FlowLayout(spacing: 6) {
                     ForEach(MuscleCount.sorted(sets)) { item in
                         Text("\(library.label(item.id)) \(MusclesWeekCard.setsText(item.sets))")
-                            .font(.caption)
+                            .font(Font.fs(.caption))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
                             .background(Capsule().fill(Color.white.opacity(0.08)))

@@ -24,7 +24,7 @@ struct MetricLargeCard: View {
                     SectionHeader(title: def.label, subtitle: "\(days) days ending \(Format.shortDay(date))")
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.caption2.weight(.semibold))
+                        .font(Font.fs(.caption2, .semibold))
                         .foregroundStyle(Theme.tertiary)
                 }
                 if let shown = m.shown {
@@ -33,7 +33,7 @@ struct MetricLargeCard: View {
                         DeltaBadge(change: m.change, better: def.better)
                         Spacer(minLength: 8)
                         Text(dayText(shown.day, def))
-                            .font(.caption)
+                            .font(Font.fs(.caption))
                             .foregroundStyle(Theme.secondary)
                     }
                     if points.count > 1 {
@@ -50,7 +50,7 @@ struct MetricLargeCard: View {
                     }
                     if def.isDayTotal && date >= model.today {
                         Text("Today's total is still growing, so it isn't in the chart or the average.")
-                            .font(.caption)
+                            .font(Font.fs(.caption))
                             .foregroundStyle(Theme.tertiary)
                     }
                 } else {

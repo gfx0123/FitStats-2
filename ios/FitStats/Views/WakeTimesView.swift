@@ -86,7 +86,7 @@ struct WakeTimesView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(Self.dayNames[i])
                 if times[i] == nil {
-                    Text("Free: sleep in").font(.caption).foregroundStyle(Theme.tertiary)
+                    Text("Free: sleep in").font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
                 }
             }
             Spacer(minLength: 8)

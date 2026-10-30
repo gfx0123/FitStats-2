@@ -31,7 +31,7 @@ struct LifestyleQuestionsView: View {
                 question("How many alcoholic drinks a week?", key: "alcohol",
                          options: [("none", "None"), ("1-10", "1–10"), ("11-20", "11–20"), ("21-35", "21–35"), ("36+", "36+")], selection: $alcohol)
                 Text("One drink is a small beer (250 ml), a glass of wine (100 ml) or a shot (30 ml). A half-litre beer counts as 2.")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -57,10 +57,10 @@ struct LifestyleQuestionsView: View {
             .disabled(answers == nil || saving)
             .accessibilityIdentifier("q-save")
             if failed {
-                Text("Couldn't save your answers. Check your connection and try again.").font(.caption).foregroundStyle(Theme.recoveryRed)
+                Text("Couldn't save your answers. Check your connection and try again.").font(Font.fs(.caption)).foregroundStyle(Theme.recoveryRed)
             }
             Text("Your answers are kept on your own server and only used for your body age and by your coach. Smoking and alcohol are counted from large studies; vaping is asked but not counted, as there's no long-term figure for it yet.")
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -76,7 +76,7 @@ struct LifestyleQuestionsView: View {
 
     private func question(_ title: String, key: String, options: [(String, String)], selection: Binding<String?>) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+            Text(title).font(Font.fs(.subheadline, .semibold)).foregroundStyle(.white)
             HStack(spacing: 6) {
                 ForEach(options.indices, id: \.self) { i in
                     let option = options[i]
@@ -86,7 +86,7 @@ struct LifestyleQuestionsView: View {
                         Haptics.tap()
                     } label: {
                         Text(option.1)
-                            .font(.footnote.weight(.semibold))
+                            .font(Font.fs(.footnote, .semibold))
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                             .frame(maxWidth: .infinity)

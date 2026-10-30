@@ -114,8 +114,8 @@ struct ComparePeriodsView: View {
                     HStack(spacing: 8) {
                         SectionHeader(title: "Averages")
                         Spacer()
-                        Text("A vs B").font(.caption2).foregroundStyle(Theme.tertiary)
-                        Text("change").font(.caption2).foregroundStyle(Theme.tertiary)
+                        Text("A vs B").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
+                        Text("change").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                             .frame(minWidth: 64, alignment: .trailing)
                     }
                     ForEach(rows) { row in
@@ -127,7 +127,7 @@ struct ComparePeriodsView: View {
                 .accessibilityIdentifier("compare-periods")
 
                 Text("Each side is the mean of its days with data. A change is coloured when it is larger than the day-to-day variation (Welch's t of 2 or more, with at least 3 days on each side); grey changes may be chance. Today and days you barely wore the band are left out of day totals such as steps.")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
             }
             .padding(.horizontal, 16)
@@ -177,26 +177,26 @@ struct ComparePeriodsView: View {
     private var customPickers: some View {
         VStack(alignment: .leading, spacing: 6) {
             Divider().overlay(Theme.track)
-            Text("Period A").font(.caption.weight(.semibold)).foregroundStyle(Theme.secondary)
+            Text("Period A").font(Font.fs(.caption, .semibold)).foregroundStyle(Theme.secondary)
             DatePicker("From", selection: $aFrom, in: ...latestDate, displayedComponents: .date)
             DatePicker("To", selection: $aTo, in: ...latestDate, displayedComponents: .date)
-            Text("Period B").font(.caption.weight(.semibold)).foregroundStyle(Theme.secondary).padding(.top, 6)
+            Text("Period B").font(Font.fs(.caption, .semibold)).foregroundStyle(Theme.secondary).padding(.top, 6)
             DatePicker("From", selection: $bFrom, in: ...latestDate, displayedComponents: .date)
             DatePicker("To", selection: $bTo, in: ...latestDate, displayedComponents: .date)
         }
-        .font(.subheadline)
+        .font(Font.fs(.subheadline))
     }
 
     private func periodLine(_ name: String, _ period: ComparePeriod, color: Color) -> some View {
         let days = Format.daysBetween(period.from, period.to) + 1
         return HStack(spacing: 8) {
             Text(name)
-                .font(.caption.weight(.bold))
+                .font(Font.fs(.caption, .bold))
                 .frame(width: 20, height: 20)
                 .background(Circle().fill(Color.white.opacity(0.08)))
-            Text(period.text).font(.subheadline).foregroundStyle(color)
+            Text(period.text).font(Font.fs(.subheadline)).foregroundStyle(color)
             Spacer()
-            Text(days == 1 ? "1 day" : "\(days) days").font(.caption).foregroundStyle(Theme.tertiary)
+            Text(days == 1 ? "1 day" : "\(days) days").font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
         }
         .accessibilityElement(children: .combine)
     }
@@ -239,20 +239,20 @@ private struct CompareRowView: View {
         let def = row.def
         VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 8) {
-                Text(def.shortLabel).font(.subheadline.weight(.medium)).lineLimit(1)
+                Text(def.shortLabel).font(Font.fs(.subheadline, .medium)).lineLimit(1)
                 Spacer(minLength: 8)
                 Text("\(def.formatted(row.meanA)) vs \(def.formatted(row.meanB))")
-                    .font(.caption.monospacedDigit())
+                    .font(Font.fs(.caption).monospacedDigit())
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 Text(changeText ?? "–")
-                    .font(.caption.weight(.semibold).monospacedDigit())
+                    .font(Font.fs(.caption, .semibold).monospacedDigit())
                     .foregroundStyle(changeColor)
                     .frame(minWidth: 64, alignment: .trailing)
             }
             Text("\(daysText(row.a.count)) vs \(daysText(row.b.count))")
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
         }
         .padding(.vertical, 2)

@@ -2,9 +2,10 @@ import SwiftUI
 
 enum Theme {
     static let background = Color(red: 0.039, green: 0.039, blue: 0.059)
-    static let card = Color.white.opacity(0.055)
-    static let cardBorder = Color.white.opacity(0.07)
-    static let track = Color.white.opacity(0.08)
+    /// The tint over a card's frosted glass (Glass in Components.swift); widgets draw it plain.
+    static let card = Color(red: 0.02, green: 0.07, blue: 0.08).opacity(0.30)
+    static let cardBorder = Color.white.opacity(0.12)
+    static let track = Color.white.opacity(0.12)
     static let secondary = Color.white.opacity(0.62)
     static let tertiary = Color.white.opacity(0.38)
 

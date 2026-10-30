@@ -56,8 +56,8 @@ struct TagChip: View {
     var body: some View {
         HStack(spacing: compact ? 4 : 6) {
             // Unknown symbol names (a newer server's tags on an older iOS) fall back to a plain tag.
-            Image(systemName: UIImage(systemName: icon) == nil ? "tag.fill" : icon).font(compact ? .caption2 : .caption)
-            Text(label).font(compact ? .caption.weight(.medium) : .subheadline).lineLimit(1)
+            Image(systemName: UIImage(systemName: icon) == nil ? "tag.fill" : icon).font(compact ? Font.fs(.caption2) : Font.fs(.caption))
+            Text(label).font(compact ? Font.fs(.caption, .medium) : Font.fs(.subheadline)).lineLimit(1)
         }
         .padding(.horizontal, compact ? 8 : 12)
         .padding(.vertical, compact ? 4 : 8)
@@ -80,24 +80,24 @@ struct JournalCard: View {
                 SectionHeader(title: "Journal")
                 Spacer()
                 Button(entry == nil ? "Log day" : "Edit") { editing = true }
-                    .font(.subheadline.weight(.semibold))
+                    .font(Font.fs(.subheadline, .semibold))
                     .accessibilityIdentifier("journal-edit")
             }
             if let entry {
                 let note = entry.note ?? ""
                 if entry.tags.isEmpty && note.isEmpty {
-                    Text("Nothing to note.").font(.footnote).foregroundStyle(Theme.secondary)
+                    Text("Nothing to note.").font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
                 } else if !entry.tags.isEmpty {
                     FlowLayout(spacing: 6) {
                         ForEach(entry.tags, id: \.self) { TagChip(label: model.tagLabel($0), icon: model.tagIcon($0), compact: true) }
                     }
                 }
                 if !note.isEmpty {
-                    Text(note).font(.footnote).foregroundStyle(Theme.secondary)
+                    Text(note).font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
                 }
             } else {
                 Text("Tag alcohol, late caffeine, a late meal and more. FitStats compares the night and morning after with your other logged days.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.tertiary)
             }
         }
@@ -127,7 +127,7 @@ struct JournalSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     Text("Tag what you did \(date == model.today ? "today" : "on \(Format.shortDay(date))"). FitStats compares the night and morning after with your other logged days.")
-                        .font(.footnote)
+                        .font(Font.fs(.footnote))
                         .foregroundStyle(Theme.secondary)
                     FlowLayout(spacing: 8) {
                         ForEach(allTags, id: \.self) { tag in
@@ -148,7 +148,7 @@ struct JournalSheet: View {
                     .padding(12)
                     .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.white.opacity(0.06)))
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Note").font(.caption).foregroundStyle(Theme.secondary)
+                        Text("Note").font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                         TextField("Optional: how you felt, what was different", text: $note, axis: .vertical)
                             .lineLimit(2...5)
                             .padding(12)
@@ -161,7 +161,7 @@ struct JournalSheet: View {
                                 dismiss()
                             }
                         }
-                        .font(.footnote)
+                        .font(Font.fs(.footnote))
                     }
                 }
                 .padding(16)
@@ -231,7 +231,7 @@ struct JournalImpactsCard: View {
             SectionHeader(title: "Journal", subtitle: "The night and morning after tagged days, against your other logged days")
             if impacts.isEmpty {
                 Text("Log your days on Today. Once a tag has 3 logged days with it and 3 without, its effect shows here.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
             } else {
                 ForEach(impacts) { impact in
@@ -240,7 +240,7 @@ struct JournalImpactsCard: View {
                 }
             }
             Text("Green or red differences are larger than your usual night-to-night variation (Welch's t of 2 or more); grey ones are within it. A pattern in your data, not proof of cause.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -252,19 +252,19 @@ private struct TagImpactRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(impact.label).font(.subheadline.weight(.semibold))
+                Text(impact.label).font(Font.fs(.subheadline, .semibold))
                 Spacer()
-                Text(impact.days == 1 ? "1 day" : "\(impact.days) days").font(.caption).foregroundStyle(Theme.tertiary)
+                Text(impact.days == 1 ? "1 day" : "\(impact.days) days").font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
             }
             if impact.effects.isEmpty {
-                Text("Needs 3 logged days with this tag and 3 without.").font(.caption).foregroundStyle(Theme.tertiary)
+                Text("Needs 3 logged days with this tag and 3 without.").font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
             } else {
                 HStack(spacing: 8) {
                     Spacer()
                     Text("tagged vs other")
                     Text("change").frame(minWidth: 58, alignment: .trailing)
                 }
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
                 .accessibilityHidden(true)
                 ForEach(impact.effects) { EffectRow(effect: $0) }
@@ -280,13 +280,13 @@ private struct EffectRow: View {
     var body: some View {
         if let def = MetricCatalog.def(effect.metric) {
             HStack(spacing: 8) {
-                Text(def.shortLabel).font(.caption).foregroundStyle(Theme.secondary)
+                Text(def.shortLabel).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                 Spacer()
                 Text("\(def.formatted(effect.with)) vs \(def.formatted(effect.without))")
-                    .font(.caption.monospacedDigit())
+                    .font(Font.fs(.caption).monospacedDigit())
                     .foregroundStyle(Theme.secondary)
                 Text(diffText(def))
-                    .font(.caption.weight(.semibold).monospacedDigit())
+                    .font(Font.fs(.caption, .semibold).monospacedDigit())
                     .foregroundStyle(color(def))
                     .frame(minWidth: 58, alignment: .trailing)
             }

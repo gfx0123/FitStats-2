@@ -13,9 +13,7 @@ struct Card<Content: View>: View {
         }
         .padding(padding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous).fill(bare ? Color.clear : Theme.card)
-        )
+        .background { if !bare { Glass(cornerRadius: 22) } }
         .overlay(
             RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(bare ? Color.clear : Theme.cardBorder, lineWidth: 1)
         )
@@ -29,10 +27,10 @@ struct ScoreWhyLine: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
             Image(systemName: why.lifted ? "arrow.up.right" : "arrow.down.right")
-                .font(.caption.weight(.bold))
+                .font(Font.fs(.caption, .bold))
                 .foregroundStyle(why.lifted ? Theme.recoveryGreen : Theme.recoveryYellow)
             Text(why.text)
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -68,11 +66,11 @@ struct SectionHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title.uppercased())
-                .font(.caption.weight(.semibold))
+                .font(Font.fs(.caption, .semibold))
                 .tracking(1.2)
                 .foregroundStyle(Theme.secondary)
             if let subtitle {
-                Text(subtitle).font(.caption2).foregroundStyle(Theme.tertiary)
+                Text(subtitle).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
             }
         }
     }
@@ -142,13 +140,13 @@ struct ScoreRing: View {
             ) {
                 VStack(spacing: 0) {
                     Text(value.map { Format.number($0, decimals: decimals) + suffix } ?? "–")
-                        .font(Theme.number(size * 0.27))
+                        .font(Font.fredoka(size * 0.27))
                         .foregroundStyle(.white)
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
                     if let caption {
                         Text(caption)
-                            .font(.system(size: max(9, size * 0.1), weight: .medium))
+                            .font(Font.fredoka(max(9, size * 0.1), weight: .medium))
                             .foregroundStyle(Theme.secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.7)
@@ -158,7 +156,7 @@ struct ScoreRing: View {
             }
             .frame(width: size, height: size)
             Text(title)
-                .font(.footnote.weight(.semibold))
+                .font(Font.fs(.footnote, .semibold))
                 .foregroundStyle(Theme.secondary)
         }
     }
@@ -178,7 +176,7 @@ struct DeltaBadge: View {
                 Image(systemName: up ? "arrow.up.right" : "arrow.down.right")
                 Text("\(Format.number(abs(change), decimals: decimals))\(suffix)")
             }
-            .font(.caption2.weight(.semibold))
+            .font(Font.fs(.caption2, .semibold))
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
             .background(Capsule().fill(color(good).opacity(0.16)))
@@ -212,13 +210,13 @@ struct MetricTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Image(systemName: icon).font(.caption).foregroundStyle(color)
-                FittingText(title, short: shortTitle ?? title).font(.caption).foregroundStyle(Theme.secondary)
+                Image(systemName: icon).font(Font.fs(.caption)).foregroundStyle(color)
+                FittingText(title, short: shortTitle ?? title).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                 Spacer(minLength: 0)
             }
             // A fixed line height, so a value shrunk to fit is as tall as its neighbours.
             Text(value)
-                .font(Theme.number(22))
+                .font(Font.fredoka(22))
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
@@ -226,7 +224,7 @@ struct MetricTile: View {
             if sub != nil || showsBadge {
                 HStack(spacing: 6) {
                     if let sub {
-                        Text(sub).font(.caption2).foregroundStyle(Theme.tertiary).lineLimit(1)
+                        Text(sub).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary).lineLimit(1)
                     }
                     Spacer(minLength: 0)
                     DeltaBadge(change: change, better: better)
@@ -271,12 +269,12 @@ struct ComponentBar: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(component.label).font(.subheadline.weight(.medium))
+                Text(component.label).font(Font.fs(.subheadline, .medium))
                 Text("\(Int((component.weight * 100).rounded()))%")
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.tertiary)
                 Spacer()
-                Text(Format.number(component.value)).font(Theme.number(16, weight: .semibold))
+                Text(Format.number(component.value)).font(Font.fredoka(16, weight: .semibold))
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
@@ -289,7 +287,7 @@ struct ComponentBar: View {
             }
             .frame(height: 6)
             if !component.detail.isEmpty {
-                Text(component.detail).font(.caption).foregroundStyle(Theme.secondary)
+                Text(component.detail).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
             }
         }
     }
@@ -304,9 +302,9 @@ struct KeyValueRow: View {
         HStack {
             Text(key).foregroundStyle(Theme.secondary)
             Spacer()
-            Text(value).foregroundStyle(color).font(.body.monospacedDigit())
+            Text(value).foregroundStyle(color).font(Font.fs(.body).monospacedDigit())
         }
-        .font(.subheadline)
+        .font(Font.fs(.subheadline))
     }
 }
 
@@ -320,10 +318,10 @@ struct Banner: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: icon).foregroundStyle(color)
-            Text(text).font(.footnote).foregroundStyle(.white).frame(maxWidth: .infinity, alignment: .leading)
+            Text(text).font(Font.fs(.footnote)).foregroundStyle(.white).frame(maxWidth: .infinity, alignment: .leading)
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .font(.footnote.weight(.semibold))
+                    .font(Font.fs(.footnote, .semibold))
                     .foregroundStyle(color)
             }
         }
@@ -339,10 +337,10 @@ struct EmptyStateView: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            Image(systemName: icon).font(.system(size: 34)).foregroundStyle(Theme.tertiary)
-            Text(title).font(.headline)
+            Image(systemName: icon).font(Font.fredoka(34, weight: .regular)).foregroundStyle(Theme.tertiary)
+            Text(title).font(Font.fs(.headline))
             Text(message)
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -351,11 +349,21 @@ struct EmptyStateView: View {
     }
 }
 
+/// A card's frosted glass: the background scene shows through, blurred and tinted.
+struct Glass: View {
+    var cornerRadius: CGFloat = 22
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        shape.fill(.ultraThinMaterial).overlay(shape.fill(Theme.card))
+    }
+}
+
 struct ScreenBackground: ViewModifier {
     func body(content: Content) -> some View {
         content
             .scrollContentBackground(.hidden)
-            .background(Theme.background.ignoresSafeArea())
+            .background(AppBackground())
     }
 }
 

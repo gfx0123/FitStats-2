@@ -183,7 +183,7 @@ struct HeartRateDayChart: View {
         let data = buckets
         if data.count < Self.minimumBuckets {
             Label("The line fills in as your band syncs through the day.", systemImage: "waveform.path.ecg")
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.tertiary)
                 .frame(maxWidth: .infinity, minHeight: 80)
         } else {
@@ -204,7 +204,7 @@ struct HeartRateDayChart: View {
                     .foregroundStyle(Color.white.opacity(0.35))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
                     .annotation(position: .bottom, alignment: .trailing) {
-                        Text("resting \(Int(rhr.rounded()))").font(.caption2).foregroundStyle(Theme.tertiary)
+                        Text("resting \(Int(rhr.rounded()))").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                     }
             }
         }

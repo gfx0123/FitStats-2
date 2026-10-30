@@ -30,7 +30,7 @@ struct BodyAgeView: View {
                         if !b.missing.isEmpty || !b.notCounted.isEmpty { missing(b) }
                         Button { editingAnswers = true } label: {
                             Label("Edit your answers (smoking, vaping, alcohol)", systemImage: "square.and.pencil")
-                                .font(.footnote.weight(.semibold))
+                                .font(Font.fs(.footnote, .semibold))
                         }
                         .accessibilityIdentifier("bodyage-edit-answers")
                         AskCoachRow(prompts: [
@@ -81,10 +81,10 @@ struct BodyAgeView: View {
     private func questions(_ b: BodyAge) -> some View {
         Card {
             VStack(alignment: .leading, spacing: 6) {
-                Image(systemName: "hourglass").font(.title2).foregroundStyle(Theme.recoveryGreen)
-                Text("A few questions first").font(.title3.weight(.bold)).foregroundStyle(.white)
+                Image(systemName: "hourglass").font(Font.fs(.title2)).foregroundStyle(Theme.recoveryGreen)
+                Text("A few questions first").font(Font.fs(.title3, .bold)).foregroundStyle(.white)
                 Text("Your band can't see these, and they matter for how fast you age. Three quick answers, then your body age.")
-                    .font(.subheadline)
+                    .font(Font.fs(.subheadline))
                     .foregroundStyle(Theme.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -104,7 +104,7 @@ struct BodyAgeView: View {
             }
             if b.factors.contains(where: { $0.key == "steps" }) && b.factors.contains(where: { $0.key == "exercise" }) {
                 Text("Steps and exercise measure much the same activity, so the total uses their average.")
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.tertiary)
             }
         }
@@ -120,23 +120,23 @@ struct BodyAgeView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 12) {
                     Image(systemName: Self.icon(f.key))
-                        .font(.subheadline)
+                        .font(Font.fs(.subheadline))
                         .foregroundStyle(Self.tint(f.key))
                         .frame(width: 32, height: 32)
                         .background(Circle().fill(Self.tint(f.key).opacity(0.15)))
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(f.label).font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+                        Text(f.label).font(Font.fs(.subheadline, .semibold)).foregroundStyle(.white)
                         Text(f.days == 0 ? f.unit : "\(Format.number(f.value, decimals: f.key == "fitness" || f.key == "sleep" ? 1 : 0)) \(f.unit)")
-                            .font(.caption)
+                            .font(Font.fs(.caption))
                             .foregroundStyle(Theme.secondary)
                             .lineLimit(2)
                     }
                     Spacer(minLength: 6)
                     Text(Self.yearsText(f.years))
-                        .font(Theme.number(15, weight: .semibold))
+                        .font(Font.fredoka(15, weight: .semibold))
                         .foregroundStyle(Self.color(f.years))
                     Image(systemName: "chevron.down")
-                        .font(.caption2.weight(.semibold))
+                        .font(Font.fs(.caption2, .semibold))
                         .foregroundStyle(Theme.tertiary)
                         .rotationEffect(.degrees(expanded ? 180 : 0))
                 }
@@ -146,7 +146,7 @@ struct BodyAgeView: View {
                         Text(f.detail).foregroundStyle(Theme.secondary)
                         Text(f.days == 0 ? "Source: \(f.source) · from your answers" : "Source: \(f.source) · \(f.days) days of data").foregroundStyle(Theme.tertiary)
                     }
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.leading, 44)
                 }
@@ -164,9 +164,9 @@ struct BodyAgeView: View {
             ForEach(b.whatIf) { w in
                 HStack {
                     Image(systemName: "arrow.down.right.circle.fill").foregroundStyle(Theme.recoveryGreen)
-                    Text(w.change).font(.subheadline).foregroundStyle(.white)
+                    Text(w.change).font(Font.fs(.subheadline)).foregroundStyle(.white)
                     Spacer(minLength: 8)
-                    Text(Self.yearsText(w.years)).font(Theme.number(15, weight: .semibold)).foregroundStyle(Theme.recoveryGreen)
+                    Text(Self.yearsText(w.years)).font(Font.fredoka(15, weight: .semibold)).foregroundStyle(Theme.recoveryGreen)
                 }
             }
         }
@@ -185,7 +185,7 @@ struct BodyAgeView: View {
                     .foregroundStyle(Theme.tertiary)
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
                     .annotation(position: .top, alignment: .leading) {
-                        Text("Your age").font(.caption2).foregroundStyle(Theme.tertiary)
+                        Text("Your age").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                     }
                 ForEach(points) { p in
                     LineMark(x: .value("Week", p.date), y: .value("Body age", p.value))
@@ -218,16 +218,16 @@ struct BodyAgeView: View {
         Card {
             SectionHeader(title: "Estimated VO₂ max", subtitle: "Your band doesn't report it, so it's worked out from heart rate")
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(Format.number(vo2.value, decimals: 1)).font(Theme.number(30)).foregroundStyle(.white)
-                Text("ml/kg/min").font(.caption).foregroundStyle(Theme.tertiary)
+                Text(Format.number(vo2.value, decimals: 1)).font(Font.fredoka(30)).foregroundStyle(.white)
+                Text("ml/kg/min").font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
                 Spacer()
                 VStack(alignment: .trailing, spacing: 1) {
-                    Text(Format.number(vo2.typicalForAge, decimals: 1)).font(Theme.number(17, weight: .semibold)).foregroundStyle(Theme.secondary)
-                    Text("typical for your age").font(.caption2).foregroundStyle(Theme.tertiary)
+                    Text(Format.number(vo2.typicalForAge, decimals: 1)).font(Font.fredoka(17, weight: .semibold)).foregroundStyle(Theme.secondary)
+                    Text("typical for your age").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                 }
             }
             Text("\(vo2.method). It can be off by about ±\(Format.number(vo2.errorMlKgMin, decimals: 1)).")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -238,12 +238,12 @@ struct BodyAgeView: View {
             SectionHeader(title: "Not counted", subtitle: b.missing.isEmpty ? nil : "The band's data needs 14 days in the last 30")
             ForEach(b.missing, id: \.self) { m in
                 Label(m.prefix(1).uppercased() + m.dropFirst(), systemImage: "clock")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
             }
             ForEach(b.notCounted, id: \.self) { m in
                 Label(m, systemImage: "info.circle")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -253,12 +253,12 @@ struct BodyAgeView: View {
     private func note(_ b: BodyAge) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(b.note)
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
             NavigationLink(value: "method") {
                 Label("How it's calculated", systemImage: "function")
-                    .font(.footnote.weight(.semibold))
+                    .font(Font.fs(.footnote, .semibold))
             }
             .accessibilityIdentifier("bodyage-method")
         }
@@ -323,51 +323,45 @@ private struct BodyAgeHero: View {
     var body: some View {
         let color = BodyAgeView.color(b.difference)
         let value = shown ?? b.bodyAge
+        let parts = Format.number(value, decimals: 1).split(separator: ".", maxSplits: 1).map(String.init)
         VStack(spacing: 0) {
             Spacer(minLength: 12)
             VStack(spacing: 0) {
                 Text("BODY AGE")
-                    .font(.caption.weight(.bold))
+                    .font(Font.fs(.caption, .medium))
                     .tracking(4)
                     .foregroundStyle(Theme.secondary)
-                ZStack {
-                    Text(Format.number(value, decimals: 1))
-                        .foregroundStyle(color)
-                        .blur(radius: 36)
-                        .opacity(0.7)
-                    Text(Format.number(value, decimals: 1))
-                        .foregroundStyle(LinearGradient(colors: [.white, .white, color], startPoint: .top, endPoint: .bottom))
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text(parts.first ?? "–")
+                        .font(Font.fredoka(176, weight: .medium))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.25), radius: 18, y: 4)
+                    if parts.count > 1 {
+                        Text("." + parts[1])
+                            .font(Font.fredoka(76, weight: .medium))
+                            .foregroundStyle(color)
+                    }
                 }
-                .font(.system(size: 160, weight: .bold, design: .rounded))
-                .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.4)
                 .contentTransition(.numericText(value: value))
-                .padding(.top, 4)
-                Text("years")
-                    .font(.title3.weight(.medium))
-                    .foregroundStyle(Theme.secondary)
-                    .offset(y: -10)
-                Text(abs(b.difference) < 0.05 ? "The same as your age, \(b.age)" : "\(BodyAgeView.differenceText(b.difference)) than your \(b.age)")
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Capsule().fill(color.opacity(0.16)))
-                    .overlay(Capsule().stroke(color.opacity(0.35)))
-                    .foregroundStyle(color)
-                    .padding(.top, 10)
-                AgeScale(age: Double(b.age), bodyAge: b.bodyAge)
-                    .frame(height: 34)
-                    .padding(.top, 34)
-                    .padding(.horizontal, 8)
+                (Text("You're \(b.age) · ").foregroundStyle(.white.opacity(0.8))
+                    + Text(abs(b.difference) < 0.05 ? "the same as your age" : BodyAgeView.differenceText(b.difference)).foregroundStyle(color))
+                    .font(Font.fs(.headline, .medium))
+                    .padding(.top, 2)
+                AgeRuler(age: Double(b.age), bodyAge: b.bodyAge, value: value, color: color)
+                    .frame(height: 150)
+                    .padding(.horizontal, -16)
+                    .padding(.top, 18)
             }
-            .accessibilityElement(children: .combine)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Body age \(Format.number(b.bodyAge, decimals: 1)) years. You're \(b.age).")
             .accessibilityIdentifier("bodyage-hero")
             Spacer(minLength: 12)
             Button(action: onDetails) {
                 VStack(spacing: 4) {
-                    Text("What makes it up").font(.footnote.weight(.semibold))
-                    Image(systemName: "chevron.down").font(.footnote.weight(.bold))
+                    Text("What makes it up").font(Font.fs(.footnote, .semibold))
+                    Image(systemName: "chevron.down").font(Font.fs(.footnote, .bold))
                 }
                 .foregroundStyle(Theme.secondary)
                 .padding(.bottom, 8)
@@ -376,66 +370,80 @@ private struct BodyAgeHero: View {
         }
         .frame(maxWidth: .infinity)
         .containerRelativeFrame(.vertical) { height, _ in height * 0.84 }
-        .background { AmbientGlow(color: color).padding(.horizontal, -16).padding(.top, -160).allowsHitTesting(false) }
         .onAppear {
             guard shown == nil, !reduceMotion else { return }
             shown = Double(b.age)
-            withAnimation(.spring(duration: 1.6, bounce: 0.15).delay(0.15)) { shown = b.bodyAge }
+            withAnimation(.spring(duration: 1.8, bounce: 0.1).delay(0.15)) { shown = b.bodyAge }
         }
         .onChange(of: b.bodyAge) { _, new in withAnimation(.snappy) { shown = new } }
     }
 }
 
-/// Two soft lights drifting behind the number.
-private struct AmbientGlow: View {
-    let color: Color
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
-            Canvas { ctx, size in
-                let blobs: [(Color, CGFloat, Double, Double)] = [(color, 0.75, 0.13, 0), (Theme.strainEnd, 0.55, 0.09, 2.1)]
-                for (c, scale, speed, phase) in blobs {
-                    let r = min(size.width, size.height) * scale
-                    let cx = size.width * (0.5 + 0.18 * CGFloat(sin(t * speed + phase)))
-                    let cy = size.height * (0.42 + 0.10 * CGFloat(cos(t * speed * 1.3 + phase)))
-                    let rect = CGRect(x: cx - r, y: cy - r, width: r * 2, height: r * 2)
-                    ctx.fill(Path(ellipseIn: rect), with: .radialGradient(Gradient(colors: [c.opacity(0.32), c.opacity(0)]),
-                                                                          center: CGPoint(x: cx, y: cy), startRadius: 0, endRadius: r))
-                }
-            }
-        }
-    }
-}
-
-/// A line from 10 years younger to 10 older than their age, with their age and body age on it.
-private struct AgeScale: View {
+/// A curved ruler like a camera dial: a fixed needle on the body age, your real age marked
+/// "YOU", and the ticks between the two lit. It zooms out when the two are far apart.
+private struct AgeRuler: View, Animatable {
     let age: Double
     let bodyAge: Double
+    var value: Double
+    let color: Color
+
+    var animatableData: Double {
+        get { value }
+        set { value = newValue }
+    }
 
     var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            let x = { (v: Double) -> CGFloat in w * CGFloat(min(1, max(0, (v - age + 10) / 20))) }
-            ZStack(alignment: .topLeading) {
-                LinearGradient(colors: [Theme.recoveryGreen, Theme.recoveryYellow, Theme.recoveryRed], startPoint: .leading, endPoint: .trailing)
-                    .frame(height: 6)
-                    .clipShape(Capsule())
-                    .opacity(0.55)
-                    .offset(y: 4)
-                Rectangle().fill(.white.opacity(0.6)).frame(width: 2, height: 14).offset(x: x(age) - 1)
-                Circle().fill(.white).frame(width: 14, height: 14).offset(x: x(bodyAge) - 7)
-                    .shadow(color: .black.opacity(0.4), radius: 2)
-                Text("−10").font(.caption2).foregroundStyle(Theme.tertiary).offset(y: 18)
-                Text("your age").font(.caption2).foregroundStyle(Theme.tertiary)
-                    .fixedSize()
-                    .frame(width: 80)
-                    .offset(x: x(age) - 40, y: 18)
-                Text("+10").font(.caption2).foregroundStyle(Theme.tertiary).frame(width: w, alignment: .trailing).offset(y: 18)
+        Canvas { gc, size in
+            let cx = size.width / 2, radius = size.width * 1.4, top: CGFloat = 46
+            let center = CGPoint(x: cx, y: top + radius)
+            // Points per year: about 110 (a tick every 0.1 year) while both ages fit.
+            let gap = max(abs(bodyAge - age), 0.01)
+            let perYear = min(110, max(14, Double(size.width) * 0.4 / gap))
+            let step = perYear >= 60 ? 0.1 : (perYear >= 25 ? 0.5 : 1)
+            let labelEvery = perYear >= 30 ? 1.0 : 5.0
+            let span = Double(size.width) / 2 / perYear + step
+            let lo = min(age, value), hi = max(age, value)
+            func point(_ u: Double, _ r: CGFloat) -> (CGPoint, Double) {
+                let a = (u - value) * perYear / Double(radius)
+                return (CGPoint(x: center.x + r * CGFloat(sin(a)), y: center.y - r * CGFloat(cos(a))), a)
             }
+            var k = ((value - span) / step).rounded(.down)
+            while k * step <= value + span {
+                let u = (k * step * 10).rounded() / 10
+                k += 1
+                let (outer, _) = point(u, radius)
+                let fade = max(0, 1 - pow(abs(outer.x - cx) / (size.width / 2), 2.2))
+                guard fade > 0.01 else { continue }
+                let major = abs(u / labelEvery - (u / labelEvery).rounded()) < 1e-6
+                let half = !major && abs(u * 2 - (u * 2).rounded()) < 1e-6 && step < 0.5
+                let length: CGFloat = major ? 30 : (half ? 20 : 12)
+                let lit = u >= lo - 1e-6 && u <= hi + 1e-6
+                let (inner, _) = point(u, radius - length)
+                var tick = Path()
+                tick.move(to: outer)
+                tick.addLine(to: inner)
+                let alpha = fade * (lit ? 1 : (major ? 0.95 : 0.55))
+                gc.stroke(tick, with: .color((lit ? color : .white).opacity(alpha)), style: StrokeStyle(lineWidth: major ? 3 : 2, lineCap: .round))
+                if major {
+                    let isAge = abs(u - age.rounded()) < 1e-6 && abs(age - age.rounded()) < 1e-6
+                    let (label, _) = point(u, radius - 52)
+                    gc.draw(Text("\(Int(u.rounded()))")
+                                .font(Font.fredoka(16, weight: isAge ? .semibold : .medium))
+                                .foregroundColor((isAge ? color : .white).opacity(fade * (isAge ? 1 : 0.75))),
+                            at: label)
+                }
+            }
+            // "YOU" over your real age.
+            let (you, _) = point(age, radius + 16)
+            if abs(you.x - cx) < size.width / 2 - 20 {
+                gc.draw(Text("YOU").font(Font.fredoka(10, weight: .semibold)).tracking(1.5).foregroundColor(color.opacity(0.95)), at: you)
+            }
+            // The needle, fixed at the centre on the body age.
+            var needle = gc
+            needle.addFilter(.shadow(color: .white.opacity(0.7), radius: 6))
+            needle.fill(Path(roundedRect: CGRect(x: cx - 2.5, y: top - 22, width: 5, height: 60), cornerRadius: 2.5), with: .color(.white))
+            needle.fill(Path(ellipseIn: CGRect(x: cx - 5, y: top - 35, width: 10, height: 10)), with: .color(.white))
         }
-        .accessibilityHidden(true)
     }
 }
 
@@ -460,17 +468,17 @@ struct BodyAgeMethodView: View {
                 Card {
                     SectionHeader(title: "The idea")
                     Text("Each factor's link with the risk of dying, from large studies, is turned into years of age: someone whose risk is like that of a person 2 years older gets +2 years. Fitness, activity (the average of steps and exercise), sleep, and your answers about smoking and alcohol are added up, within ±20 years.")
-                        .font(.subheadline).foregroundStyle(Theme.secondary)
+                        .font(Font.fs(.subheadline)).foregroundStyle(Theme.secondary)
                     Text("It's FitStats' own combination of published numbers, not a validated test, and it says nothing about your cells or genes. Resting heart rate counts once, through the fitness estimate. Sleep regularity isn't included: your band's data can't be compared with how the study measured it.")
-                        .font(.footnote).foregroundStyle(Theme.tertiary)
+                        .font(Font.fs(.footnote)).foregroundStyle(Theme.tertiary)
                 }
                 Card {
                     SectionHeader(title: "Sources")
                     ForEach(sources.indices, id: \.self) { i in
                         let s = sources[i]
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(s.0).font(.subheadline.weight(.semibold)).foregroundStyle(.white)
-                            Text(s.1).font(.caption).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
+                            Text(s.0).font(Font.fs(.subheadline, .semibold)).foregroundStyle(.white)
+                            Text(s.1).font(Font.fs(.caption)).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(.vertical, 2)
                     }

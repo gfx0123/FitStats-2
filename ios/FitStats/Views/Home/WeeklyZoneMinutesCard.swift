@@ -55,14 +55,14 @@ struct WeeklyZoneMinutesCard: View {
             Spacer(minLength: 8)
             if soFar {
                 Text("so far")
-                    .font(.caption2.weight(.semibold))
+                    .font(Font.fs(.caption2, .semibold))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
                     .background(Capsule().fill(Theme.heart.opacity(0.16)))
                     .foregroundStyle(Theme.heart)
             }
             Image(systemName: "chevron.right")
-                .font(.caption2.weight(.semibold))
+                .font(Font.fs(.caption2, .semibold))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -74,16 +74,16 @@ struct WeeklyZoneMinutesCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(Format.number(total))
-                        .font(Theme.number(30))
+                        .font(Font.fredoka(30))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                     Text("/ \(Format.number(Self.weeklyTarget)) min")
-                        .font(Theme.number(16, weight: .semibold))
+                        .font(Font.fredoka(16, weight: .semibold))
                         .foregroundStyle(Theme.secondary)
                         .lineLimit(1)
                 }
                 Text(soFar ? "Last 7 days, today so far" : "7-day total")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -92,18 +92,18 @@ struct WeeklyZoneMinutesCard: View {
             VStack(alignment: .trailing, spacing: 2) {
                 if reached {
                     Label("Target reached", systemImage: "checkmark.circle.fill")
-                        .font(.subheadline.weight(.semibold))
+                        .font(Font.fs(.subheadline, .semibold))
                         .foregroundStyle(Theme.recoveryGreen)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                 } else {
                     Text("\(Format.number(remaining)) min")
-                        .font(Theme.number(20, weight: .semibold))
+                        .font(Font.fredoka(20, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                 }
                 Text(targetCaption(total: total, reached: reached, soFar: soFar))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -150,7 +150,7 @@ struct WeeklyZoneMinutesCard: View {
         let selected = d.date == date
         return VStack(spacing: 4) {
             Text(d.minutes.map { Format.number($0) } ?? "–")
-                .font(.caption2.weight(.medium))
+                .font(Font.fs(.caption2, .medium))
                 .monospacedDigit()
                 .foregroundStyle(d.minutes == nil ? Theme.tertiary : Theme.secondary)
                 .lineLimit(1)
@@ -158,7 +158,7 @@ struct WeeklyZoneMinutesCard: View {
             bar(d, scale: scale)
                 .frame(height: Self.barAreaHeight, alignment: .bottom)
             Text(Format.weekdayLetter(d.date))
-                .font(.caption2.weight(selected ? .semibold : .regular))
+                .font(Font.fs(.caption2, selected ? .semibold : .regular))
                 .foregroundStyle(selected ? Color.white : Theme.tertiary)
                 .lineLimit(1)
         }
@@ -203,18 +203,18 @@ struct WeeklyZoneMinutesCard: View {
                     .minimumScaleFactor(0.8)
                 Spacer(minLength: 0)
             }
-            .font(.caption2)
+            .font(Font.fs(.caption2))
             .foregroundStyle(Theme.tertiary)
             .accessibilityHidden(true)
         }
         if !lowWear.isEmpty {
             Label(lowWearText(lowWear), systemImage: "exclamationmark.circle")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.recoveryYellow)
         }
         if missing > 0 {
             Text(missingText(missing))
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }

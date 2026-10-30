@@ -12,7 +12,7 @@ struct BedtimeCard: View {
             SectionHeader(title: "Best bedtime", subtitle: subtitle)
             if let bedtime, bedtime.buckets.contains(where: { $0.sleepScore != nil }) {
                 Text(headline(bedtime))
-                    .font(.subheadline)
+                    .font(Font.fs(.subheadline))
                     .foregroundStyle(.white)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 8) {
@@ -21,7 +21,7 @@ struct BedtimeCard: View {
                     Text("sleep score")
                     Text("nights").frame(width: 58, alignment: .trailing)
                 }
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
                 .accessibilityHidden(true)
                 VStack(spacing: 10) {
@@ -31,19 +31,19 @@ struct BedtimeCard: View {
                 }
                 if let best = clearBest(bedtime), let detail = bestDetail(best) {
                     Text(detail)
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
                 }
             } else {
                 Text("Needs at least 3 nights with a sleep score in two different bedtime windows.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
             }
             Text("Bedtime is when your main sleep started. Grey windows have fewer than 3 nights, too few for an average.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
             Text("A pattern in your data, not proof that the bedtime itself causes better sleep.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
         .accessibilityElement(children: .contain)
@@ -121,7 +121,7 @@ private struct BedtimeRow: View {
         let score = bucket.sleepScore
         HStack(spacing: 8) {
             Text(BedtimeCard.windowLabel(bucket))
-                .font(.caption.monospacedDigit())
+                .font(Font.fs(.caption).monospacedDigit())
                 .foregroundStyle(score == nil ? Theme.tertiary : (highlighted ? Color.white : Theme.secondary))
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
@@ -138,11 +138,11 @@ private struct BedtimeRow: View {
             }
             .frame(height: 8)
             Text(score.map { Format.number($0) } ?? "–")
-                .font(.caption.weight(.semibold).monospacedDigit())
+                .font(Font.fs(.caption, .semibold).monospacedDigit())
                 .foregroundStyle(score == nil ? Theme.tertiary : (highlighted ? Theme.recoveryGreen : Color.white))
                 .frame(width: 30, alignment: .trailing)
             Text("\(bucket.nights)")
-                .font(.caption.monospacedDigit())
+                .font(Font.fs(.caption).monospacedDigit())
                 .foregroundStyle(Theme.tertiary)
                 .frame(width: 58, alignment: .trailing)
         }

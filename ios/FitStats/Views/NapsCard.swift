@@ -18,7 +18,7 @@ struct NapsCard: View {
                 // One nap's row already says it.
                 if naps.count > 1 {
                     Text("\(Format.duration(Double(totalAsleep))) asleep")
-                        .font(.subheadline.weight(.semibold))
+                        .font(Font.fs(.subheadline, .semibold))
                         .foregroundStyle(Theme.sleep)
                 }
             }
@@ -27,7 +27,7 @@ struct NapsCard: View {
                 NapRow(nap: item.element, hr: hr, zone: model.zone)
             }
             Text("Naps count as sleep in your sleep debt, and today's take up to an hour off tonight's sleep need.")
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
         }
         .accessibilityElement(children: .contain)
@@ -49,11 +49,11 @@ private struct NapRow: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
                 Text(timeRange)
-                    .font(.subheadline.weight(.semibold))
+                    .font(Font.fs(.subheadline, .semibold))
                     .foregroundStyle(.white)
                 Spacer(minLength: 8)
                 Text("\(Format.duration(nap.minutesAsleep.map(Double.init))) asleep")
-                    .font(.subheadline)
+                    .font(Font.fs(.subheadline))
                     .foregroundStyle(Theme.secondary)
             }
             if let layout, !layout.segments.isEmpty {
@@ -68,7 +68,7 @@ private struct NapRow: View {
                     Label("\(heart.avg) bpm avg · \(heart.low) lowest", systemImage: "heart.fill")
                 }
             }
-            .font(.caption)
+            .font(Font.fs(.caption))
             .foregroundStyle(Theme.secondary)
             .labelStyle(NapDetailLabel())
         }
@@ -92,7 +92,7 @@ private struct NapRow: View {
             return Text("●").foregroundColor(lane.element.color) + Text(" \(lane.element.name) \(Format.duration(minutes))")
         }
         return parts.dropFirst().reduce(parts.first ?? Text("")) { $0 + Text("    ") + $1 }
-            .font(.caption)
+            .font(Font.fs(.caption))
             .foregroundStyle(Theme.secondary)
     }
 

@@ -124,7 +124,7 @@ struct HomeCardSettingsView: View {
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(def.label)
                                 if !model.recorded.contains(key) {
-                                    Text("Not recorded yet").font(.caption).foregroundStyle(Theme.tertiary)
+                                    Text("Not recorded yet").font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
                                 }
                             }
                         } icon: {

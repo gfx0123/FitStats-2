@@ -203,14 +203,14 @@ struct TodayView: View {
     private var editHeader: some View {
         VStack(spacing: 10) {
             Text("Tap a card for its settings. Hold a card, then drag it to move it, or rest it on the middle of a card the same size to stack them. Drag the corner handle to resize.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
             Card(padding: 12) {
                 Toggle(isOn: timeOfDayBinding) {
                     Label("Change Home by time of day", systemImage: "clock.arrow.2.circlepath")
-                        .font(.subheadline.weight(.semibold))
+                        .font(Font.fs(.subheadline, .semibold))
                 }
                 .tint(Theme.recoveryGreen)
                 .accessibilityIdentifier("home-time-of-day")
@@ -227,11 +227,11 @@ struct TodayView: View {
                     } label: {
                         HStack {
                             Text(timesText)
-                                .font(.caption)
+                                .font(Font.fs(.caption))
                                 .foregroundStyle(Theme.secondary)
                                 .multilineTextAlignment(.leading)
                             Spacer(minLength: 8)
-                            Text("Change").font(.caption.weight(.semibold))
+                            Text("Change").font(Font.fs(.caption, .semibold))
                         }
                     }
                     .buttonStyle(.plain)
@@ -766,7 +766,7 @@ struct TodayView: View {
             startEditing()
         } label: {
             Label("Edit Home screen", systemImage: "slider.horizontal.3")
-                .font(.caption.weight(.semibold))
+                .font(Font.fs(.caption, .semibold))
         }
         .accessibilityIdentifier("home-edit")
         .frame(maxWidth: .infinity)
@@ -779,14 +779,14 @@ struct TodayView: View {
             HStack(spacing: 10) {
                 Image(systemName: "chart.xyaxis.line").foregroundStyle(Theme.recoveryGreen)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Trends & Insights").font(.subheadline.weight(.semibold)).foregroundStyle(.white)
-                    Text("Every metric over time, the calendar, comparisons").font(.caption).foregroundStyle(Theme.secondary)
+                    Text("Trends & Insights").font(Font.fs(.subheadline, .semibold)).foregroundStyle(.white)
+                    Text("Every metric over time, the calendar, comparisons").font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(Theme.tertiary)
+                Image(systemName: "chevron.right").font(Font.fs(.caption, .semibold)).foregroundStyle(Theme.tertiary)
             }
             .padding(14)
-            .background(RoundedRectangle(cornerRadius: 16).fill(Theme.card))
+            .background(Glass(cornerRadius: 16))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.cardBorder))
         }
         .buttonStyle(.plain)
@@ -803,7 +803,7 @@ struct TodayView: View {
                 Button {
                     withAnimation { proxy.scrollTo(Self.addSectionID, anchor: .top) }
                 } label: {
-                    Image(systemName: "plus").font(.body.weight(.semibold))
+                    Image(systemName: "plus").font(Font.fs(.body, .semibold))
                 }
                 .accessibilityLabel("Add a card")
                 .accessibilityIdentifier("home-add-cards")
@@ -823,11 +823,11 @@ struct TodayView: View {
         }
         ToolbarItem(placement: .principal) {
             if editing {
-                Text("Edit Home").font(.headline)
+                Text("Edit Home").font(Font.fs(.headline))
             } else {
                 VStack(spacing: 0) {
-                    Text(Format.prettyDay(date, today: model.today)).font(.headline)
-                    Text(Format.longDay(date)).font(.caption2).foregroundStyle(Theme.secondary)
+                    Text(Format.prettyDay(date, today: model.today)).font(Font.fs(.headline))
+                    Text(Format.longDay(date)).font(Font.fs(.caption2)).foregroundStyle(Theme.secondary)
                 }
             }
         }
@@ -904,7 +904,7 @@ struct TodayView: View {
         VStack(alignment: .leading, spacing: 6) {
             if let page {
                 Label("\(page.title) Home · changes by time of day", systemImage: page.icon)
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
             }
         }
@@ -936,7 +936,7 @@ struct TodayView: View {
                     Image(systemName: "arrow.clockwise").foregroundStyle(Theme.tertiary)
                 }
             }
-            .font(.caption)
+            .font(Font.fs(.caption))
             .foregroundStyle(Theme.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 4)
@@ -944,7 +944,7 @@ struct TodayView: View {
             .overlay(alignment: .bottomLeading) {
                 if bandIsStale && !model.isSyncing {
                     Text("Open the Google Health app so your band sends newer data.")
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(Theme.recoveryYellow)
                         .padding(.horizontal, 4)
                         .offset(y: 16)
@@ -1054,13 +1054,29 @@ struct HomeLargeCard: View {
             : (breakdown.status == "calibrating" ? "Calibrating" : "No data")
         return Card {
             NavigationLink(value: DetailRoute.recovery(date)) {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack(spacing: 18) {
-                        ScoreRing(title: "Recovery", value: recovery, maxValue: 100,
-                                  color: Theme.recoveryColor(recovery), caption: caption,
-                                  size: 128, lineWidth: 14, suffix: "%")
-                        recoverySummary(day)
+                VStack(spacing: 12) {
+                    // Recovery as one big number, like Body age.
+                    VStack(spacing: 0) {
+                        Text("RECOVERY")
+                            .font(Font.fs(.caption, .medium))
+                            .tracking(3)
+                            .foregroundStyle(Theme.secondary)
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text(recovery.map { "\(Int($0.rounded()))" } ?? "–")
+                                .font(Font.fredoka(104, weight: .medium))
+                                .foregroundStyle(.white)
+                            if recovery != nil {
+                                Text("%").font(Font.fredoka(38, weight: .medium)).foregroundStyle(Theme.recoveryColor(recovery))
+                            }
+                        }
+                        .minimumScaleFactor(0.6)
+                        .lineLimit(1)
+                        Text(caption).font(Font.fs(.headline, .medium)).foregroundStyle(Theme.recoveryColor(recovery))
                     }
+                    .frame(maxWidth: .infinity)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Recovery \(recovery.map { "\(Int($0.rounded())) percent" } ?? "no data"), \(caption)")
+                    recoverySummary(day)
                     if let why = breakdown.recoveryWhy { ScoreWhyLine(why: why) }
                 }
             }
@@ -1092,12 +1108,11 @@ struct HomeLargeCard: View {
     }
 
     private func recoverySummary(_ day: DayRecord) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            summaryRow("HRV", key: "hrv_rmssd", day)
-            summaryRow("Resting HR", key: "rhr", day)
-            summaryRow("Sleep", key: "sleep_asleep_min", day)
+        HStack(alignment: .top, spacing: 8) {
+            summaryRow("HRV", key: "hrv_rmssd", day).frame(maxWidth: .infinity)
+            summaryRow("Resting HR", key: "rhr", day).frame(maxWidth: .infinity)
+            summaryRow("Sleep", key: "sleep_asleep_min", day).frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func summaryRow(_ title: String, key: String, _ day: DayRecord) -> some View {
@@ -1106,12 +1121,10 @@ struct HomeLargeCard: View {
         let base = model.baseline(def, before: date)
         var change: Double? = nil
         if let value, let base, base != 0 { change = (value - base) / abs(base) * 100 }
-        return VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.caption).foregroundStyle(Theme.secondary)
-            HStack(spacing: 6) {
-                Text(def.formatted(value)).font(Theme.number(17, weight: .semibold))
-                DeltaBadge(change: change, better: def.better)
-            }
+        return VStack(spacing: 3) {
+            Text(title).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
+            Text(def.formatted(value)).font(Font.fredoka(17, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.7)
+            DeltaBadge(change: change, better: def.better)
         }
     }
 
@@ -1154,7 +1167,7 @@ struct HomeLargeCard: View {
             Card {
                 SectionHeader(title: "Vitals")
                 Text("No vitals recorded yet.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.tertiary)
             }
         }
@@ -1167,10 +1180,10 @@ struct HomeLargeCard: View {
         return Card {
             SectionHeader(title: "Activity", subtitle: date >= model.today ? "So far today" : nil)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(Format.number(steps)).font(Theme.number(34))
+                Text(Format.number(steps)).font(Font.fredoka(34))
                 Text("steps").foregroundStyle(Theme.secondary)
                 Spacer()
-                Text("Goal \(Format.number(goal))").font(.caption).foregroundStyle(Theme.tertiary)
+                Text("Goal \(Format.number(goal))").font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
             }
             ProgressView(value: min(1, (steps ?? 0) / max(goal, 1)))
                 .tint(Theme.strain)
@@ -1182,7 +1195,7 @@ struct HomeLargeCard: View {
             }
             if day.bool("low_wear") == true, let wear = day.double("wear_min") {
                 Label(lowWearText(wear), systemImage: "exclamationmark.circle")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.recoveryYellow)
             }
         }
@@ -1211,7 +1224,7 @@ struct HomeLargeCard: View {
 
     private func comparison(_ text: String, _ value: Double, _ base: Double) -> some View {
         HStack(spacing: 6) {
-            Text(text).font(.caption).foregroundStyle(Theme.tertiary)
+            Text(text).font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
             Spacer()
             DeltaBadge(change: base > 0 ? (value - base) / base * 100 : nil, better: .higher)
         }
@@ -1226,7 +1239,7 @@ struct HomeLargeCard: View {
                 SectionHeader(title: "Heart rate")
                 Spacer()
                 Text("\(Format.number(day.double("hr_min"))) – \(Format.number(day.double("hr_max"))) bpm")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
             }
             if let hr = detail?.intraday?.hr, hr.contains(where: { $0 != nil }) {
@@ -1236,14 +1249,14 @@ struct HomeLargeCard: View {
                     Task { await model.loadDay(date, force: true) }
                 } label: {
                     Label("Couldn't load the minute data. Tap to try again.", systemImage: "arrow.clockwise")
-                        .font(.footnote)
+                        .font(Font.fs(.footnote))
                 }
                 .frame(maxWidth: .infinity, minHeight: 120)
             } else if detail == nil {
                 ProgressView().frame(maxWidth: .infinity, minHeight: 120)
             } else {
                 Text("No minute-level heart rate for this day.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.tertiary)
             }
         }
@@ -1268,7 +1281,7 @@ struct HomeLargeCard: View {
                     ProgressView().frame(maxWidth: .infinity, minHeight: 60)
                 } else {
                     Text(date == model.today ? "No workouts yet today." : "No workouts this day.")
-                        .font(.footnote)
+                        .font(Font.fs(.footnote))
                         .foregroundStyle(Theme.tertiary)
                 }
             }
@@ -1319,7 +1332,7 @@ struct WeekStrip: View {
                 } label: {
                     VStack(spacing: 5) {
                         Text(Format.weekdayLetter(date))
-                            .font(.caption2.weight(.semibold))
+                            .font(Font.fs(.caption2, .semibold))
                             .foregroundStyle(Theme.tertiary)
                         ZStack {
                             Circle().stroke(Theme.track, lineWidth: 3)
@@ -1327,7 +1340,7 @@ struct WeekStrip: View {
                                 .trim(from: 0, to: min(1, (recovery ?? 0) / 100))
                                 .stroke(Theme.recoveryColor(recovery), style: StrokeStyle(lineWidth: 3, lineCap: .round))
                                 .rotationEffect(.degrees(-90))
-                            Text(Format.dayNumber(date)).font(.caption.weight(.semibold))
+                            Text(Format.dayNumber(date)).font(Font.fs(.caption, .semibold))
                         }
                         .frame(width: 32, height: 32)
                     }
@@ -1352,26 +1365,26 @@ struct WorkoutRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: exercise.symbol)
-                .font(.title3)
+                .font(Font.fs(.title3))
                 .frame(width: 40, height: 40)
                 .background(Circle().fill(Theme.strain.opacity(0.18)))
                 .foregroundStyle(Theme.strain)
             VStack(alignment: .leading, spacing: 3) {
                 Text(exercise.displayName)
-                    .font(.subheadline.weight(.semibold))
-                Text(subtitle).font(.caption).foregroundStyle(Theme.secondary)
+                    .font(Font.fs(.subheadline, .semibold))
+                Text(subtitle).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 3) {
                 Text(exercise.durationText)
-                    .font(Theme.number(15, weight: .semibold))
+                    .font(Font.fredoka(15, weight: .semibold))
                 if let strain = exercise.strain {
-                    Text("strain \(Format.number(strain, decimals: 1))").font(.caption2).foregroundStyle(Theme.tertiary)
+                    Text("strain \(Format.number(strain, decimals: 1))").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                 } else if let hr = exercise.avgHr {
-                    Text("\(Int(hr)) bpm avg").font(.caption2).foregroundStyle(Theme.tertiary)
+                    Text("\(Int(hr)) bpm avg").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                 }
             }
-            Image(systemName: "chevron.right").font(.caption2).foregroundStyle(Theme.tertiary)
+            Image(systemName: "chevron.right").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
         }
         .contentShape(Rectangle())
     }

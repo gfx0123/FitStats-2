@@ -19,7 +19,7 @@ struct CoachBriefCard: View {
             header
             if date != model.today {
                 Text("The coach writes a briefing for today only.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
             } else if coach.isBriefing {
                 streaming
@@ -30,7 +30,7 @@ struct CoachBriefCard: View {
             }
             if let error = coach.briefError {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.recoveryYellow)
             }
         }
@@ -52,7 +52,7 @@ struct CoachBriefCard: View {
             if date == model.today && todaysBrief != nil && !coach.isBriefing {
                 Button { coach.generateBrief() } label: {
                     Image(systemName: "arrow.clockwise")
-                        .font(.footnote.weight(.semibold))
+                        .font(Font.fs(.footnote, .semibold))
                         .frame(width: 36, height: 36)
                         .contentShape(Rectangle())
                 }
@@ -69,14 +69,14 @@ struct CoachBriefCard: View {
             HStack(spacing: 8) {
                 TypingDots()
                 Text("Reading your night and your trends…")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Writing your briefing")
         } else {
             CoachMarkdown(text: coach.briefStreaming, linesAsParagraphs: true)
-                .font(.subheadline)
+                .font(Font.fs(.subheadline))
             TypingDots()
         }
     }
@@ -86,10 +86,10 @@ struct CoachBriefCard: View {
         let collapsible = lines.count > Self.collapsedLines
         let shown = (collapsible && !expanded) ? Array(lines.prefix(Self.collapsedLines)) : lines
         CoachMarkdown(text: shown.joined(separator: "\n"), linesAsParagraphs: true)
-            .font(.subheadline)
+            .font(Font.fs(.subheadline))
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(writtenText(brief))
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -99,7 +99,7 @@ struct CoachBriefCard: View {
                     withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() }
                 }
                 .buttonStyle(.plain)
-                .font(.caption.weight(.semibold))
+                .font(Font.fs(.caption, .semibold))
                 .foregroundStyle(Theme.sleep)
                 .accessibilityHint(expanded ? "Shows only the first lines of the briefing" : "Shows the whole briefing")
             }
@@ -108,11 +108,11 @@ struct CoachBriefCard: View {
 
     @ViewBuilder private var writePrompt: some View {
         Text("A short read on your recovery, what to do today and when to sleep tonight.")
-            .font(.footnote)
+            .font(Font.fs(.footnote))
             .foregroundStyle(Theme.secondary)
         Button { coach.generateBrief() } label: {
             Label("Write today's briefing", systemImage: "sparkles")
-                .font(.subheadline.weight(.semibold))
+                .font(Font.fs(.subheadline, .semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(Capsule().fill(Theme.sleep.opacity(coach.isConfigured ? 0.22 : 0.08)))
@@ -130,17 +130,17 @@ struct CoachBriefCard: View {
     @ViewBuilder private var setupNote: some View {
         if coach.status != nil {
             Label("The coach needs a Claude API key, added in Supabase (Edge Functions → Secrets). See Settings → Coach.", systemImage: "key.fill")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         } else if coach.error != nil {
             HStack(spacing: 8) {
                 Text("Couldn't reach the coach.")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                 Spacer(minLength: 8)
                 Button("Try again") { Task { await coach.refresh() } }
                     .buttonStyle(.plain)
-                    .font(.caption.weight(.semibold))
+                    .font(Font.fs(.caption, .semibold))
                     .foregroundStyle(Theme.sleep)
             }
         } else {
@@ -149,7 +149,7 @@ struct CoachBriefCard: View {
                     .controlSize(.small)
                     .tint(Theme.secondary)
                 Text("Checking the coach…")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
             }
             .accessibilityElement(children: .combine)

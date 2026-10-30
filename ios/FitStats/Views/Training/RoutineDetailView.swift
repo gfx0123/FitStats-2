@@ -49,7 +49,7 @@ struct RoutineDetailView: View {
     private func header(_ routine: Routine) -> some View {
         Card {
             HStack(alignment: .firstTextBaseline) {
-                Text(routine.name).font(.title3.weight(.semibold))
+                Text(routine.name).font(Font.fs(.title3, .semibold))
                 if routine.byCoach { CoachBadge() }
                 Spacer()
             }
@@ -63,15 +63,15 @@ struct RoutineDetailView: View {
                 fact(logs.first.map { Format.prettyDay($0.date, today: model.today) } ?? "Not yet", "last done")
             }
             if let notes = routine.notes, !notes.isEmpty {
-                Text(notes).font(.footnote).foregroundStyle(.white).fixedSize(horizontal: false, vertical: true)
+                Text(notes).font(Font.fs(.footnote)).foregroundStyle(.white).fixedSize(horizontal: false, vertical: true)
             }
         }
     }
 
     private func fact(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(value).font(.subheadline.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
-            Text(label).font(.caption2).foregroundStyle(Theme.tertiary)
+            Text(value).font(Font.fs(.subheadline, .semibold)).lineLimit(1).minimumScaleFactor(0.8)
+            Text(label).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
         }
     }
 
@@ -79,7 +79,7 @@ struct RoutineDetailView: View {
         if let active = workout.log {
             Button { workout.presented = true } label: {
                 Label(active.routineId == routine.id ? "Back to this workout" : "Finish \(active.name) first", systemImage: "timer")
-                    .font(.headline)
+                    .font(Font.fs(.headline))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.strain.opacity(0.2)))
@@ -92,7 +92,7 @@ struct RoutineDetailView: View {
                 workout.start(WorkoutLog.start(from: routine, date: model.today, previous: model.workoutLogs))
             } label: {
                 Label("Start workout", systemImage: "play.fill")
-                    .font(.headline)
+                    .font(Font.fs(.headline))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.recoveryGreen))
@@ -108,7 +108,7 @@ struct RoutineDetailView: View {
         Card {
             SectionHeader(title: "Exercises")
             if routine.exercises.isEmpty {
-                Text("No exercises yet. Tap Edit to add some.").font(.footnote).foregroundStyle(Theme.secondary)
+                Text("No exercises yet. Tap Edit to add some.").font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
             }
             ForEach(Array(routine.exercises.enumerated()), id: \.element.id) { item in
                 if item.offset > 0 { Divider().overlay(Theme.track) }
@@ -122,32 +122,32 @@ struct RoutineDetailView: View {
         return NavigationLink(value: TrainingRoute.exercise(e.name)) {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: e.kind.icon)
-                .font(.subheadline)
+                .font(Font.fs(.subheadline))
                 .foregroundStyle(Theme.strain)
                 .frame(width: 28, height: 28)
                 .background(Circle().fill(Theme.strain.opacity(0.15)))
             VStack(alignment: .leading, spacing: 3) {
-                Text(e.name).font(.subheadline.weight(.semibold))
+                Text(e.name).font(Font.fs(.subheadline, .semibold))
                 if !e.plan.isEmpty {
-                    Text(e.plan).font(.caption).foregroundStyle(Theme.secondary)
+                    Text(e.plan).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                 }
                 if !muscles.primary.isEmpty {
                     Text(muscleLine(muscles.primary, muscles.secondary))
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.muscle)
                 }
                 if let last = WorkoutLog.lastSets(of: e.name, in: model.workoutLogs) {
                     Text("Last time: \(LoggedSet.compact(last))")
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.tertiary)
                         .lineLimit(2)
                 }
                 if let notes = e.notes, !notes.isEmpty {
-                    Text(notes).font(.caption).foregroundStyle(Theme.secondary).italic()
+                    Text(notes).font(Font.fs(.caption)).foregroundStyle(Theme.secondary).italic()
                 }
             }
             Spacer(minLength: 0)
-            Image(systemName: "chevron.right").font(.caption2.weight(.semibold)).foregroundStyle(Theme.tertiary)
+            Image(systemName: "chevron.right").font(Font.fs(.caption2, .semibold)).foregroundStyle(Theme.tertiary)
         }
         .contentShape(Rectangle())
         }

@@ -19,7 +19,7 @@ struct TrendsView: View {
                     toolLinks
                     if let stats = model.stats {
                         Text("\(stats.dayCount) days of data since \(Format.shortDay(stats.firstDate))")
-                            .font(.footnote)
+                            .font(Font.fs(.footnote))
                             .foregroundStyle(Theme.secondary)
                     }
                     ForEach(MetricCategory.allCases) { category in
@@ -98,22 +98,22 @@ struct TrendsView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: icon)
-                    .font(.subheadline)
+                    .font(Font.fs(.subheadline))
                     .foregroundStyle(Theme.recoveryGreen)
                 Spacer(minLength: 0)
-                Image(systemName: "chevron.right").font(.caption2).foregroundStyle(Theme.tertiary)
+                Image(systemName: "chevron.right").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
             }
             // The same height whatever the icon, so the titles line up.
             .frame(height: 22)
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .font(Font.fs(.subheadline, .semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 11)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.card))
+        .background(Glass(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Theme.cardBorder, lineWidth: 1))
         .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
@@ -134,17 +134,17 @@ private struct MetricRow: View {
         let recent = model.series(def, from: Format.addDays(model.today, def.isDayTotal ? -30 : -29), through: model.today).map(\.value)
         HStack(spacing: 12) {
             Image(systemName: def.icon)
-                .font(.subheadline)
+                .font(Font.fs(.subheadline))
                 .frame(width: 32, height: 32)
                 .background(Circle().fill(def.category.color.opacity(0.16)))
                 .foregroundStyle(def.category.color)
             VStack(alignment: .leading, spacing: 2) {
-                FittingText(def.shortLabel, short: def.compactLabel).font(.subheadline.weight(.medium))
+                FittingText(def.shortLabel, short: def.compactLabel).font(Font.fs(.subheadline, .medium))
                 HStack(spacing: 6) {
                     Text(def.formatted(stats?.ranges["30"]?.mean))
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
-                    Text("30d avg").font(.caption2).foregroundStyle(Theme.tertiary)
+                    Text("30d avg").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                 }
             }
             Spacer(minLength: 8)
@@ -153,7 +153,7 @@ private struct MetricRow: View {
             }
             RangeChangeBadge(def: def, range: stats?.ranges["30"])
                 .frame(minWidth: 44, alignment: .trailing)
-            Image(systemName: "chevron.right").font(.caption2).foregroundStyle(Theme.tertiary)
+            Image(systemName: "chevron.right").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 8)
@@ -175,7 +175,7 @@ private struct RangeChangeBadge: View {
                     Image(systemName: change > 0 ? "arrow.up.right" : "arrow.down.right")
                     Text(text)
                 }
-                .font(.caption2.weight(.semibold))
+                .font(Font.fs(.caption2, .semibold))
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
                 .background(Capsule().fill(Theme.secondary.opacity(0.16)))
@@ -243,21 +243,21 @@ struct MetricDetailView: View {
                 Card {
                     HStack(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Average").font(.caption).foregroundStyle(Theme.secondary)
-                            Text(def.formatted(rs?.mean)).font(Theme.number(30))
+                            Text("Average").font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
+                            Text(def.formatted(rs?.mean)).font(Font.fredoka(30))
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 4) {
                             RangeChangeBadge(def: def, range: rs)
                             if let prev = rs?.prevMean {
-                                Text("prev. \(def.formatted(prev))").font(.caption2).foregroundStyle(Theme.tertiary)
+                                Text("prev. \(def.formatted(prev))").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                             }
                         }
                     }
                     if points.count >= 2 {
                         DailyMetricChart(points: points, def: def, average: rs?.mean, color: def.category.color, height: 220)
                     } else {
-                        Text("Not enough data in this range yet.").font(.footnote).foregroundStyle(Theme.tertiary)
+                        Text("Not enough data in this range yet.").font(Font.fs(.footnote)).foregroundStyle(Theme.tertiary)
                     }
                 }
 
@@ -284,7 +284,7 @@ struct MetricDetailView: View {
 
                 if def.isDayTotal {
                     Text("Today is excluded from these numbers until the day is over.")
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.tertiary)
                 }
             }

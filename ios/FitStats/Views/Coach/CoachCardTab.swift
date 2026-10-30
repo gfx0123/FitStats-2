@@ -12,18 +12,18 @@ struct CoachCardTab: View {
             HStack(spacing: 6) {
                 CoachCharacter(persona: coach.persona, size: 22, animated: false)
                 Text("Ask \(coach.persona.name)")
-                    .font(.caption.weight(.semibold))
+                    .font(Font.fs(.caption, .semibold))
                     .foregroundStyle(coach.persona.color)
                     .lineLimit(1)
                 Image(systemName: "arrow.up.right")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(Font.fredoka(9, weight: .bold))
                     .foregroundStyle(coach.persona.color.opacity(0.75))
             }
             .padding(.leading, 8)
             .padding(.trailing, 12)
             .padding(.top, 4)
             .padding(.bottom, 5)
-            .background(CardTabShape(closed: true).fill(Theme.card))
+            .background(CardTabShape(closed: true).fill(.ultraThinMaterial).overlay(CardTabShape(closed: true).fill(Theme.card)))
             .overlay(CardTabShape(closed: false).stroke(Theme.cardBorder, lineWidth: 1))
             .contentShape(Rectangle())
         }

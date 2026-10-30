@@ -209,7 +209,7 @@ struct ReminderToggle: View {
             .accessibilityIdentifier("toggle-\(key)")
         if denied {
             Button("Notifications are off for FitStats. Open Settings") { Reminders.openSystemSettings() }
-                .font(.footnote)
+                .font(Font.fs(.footnote))
         }
     }
 

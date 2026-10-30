@@ -48,7 +48,7 @@ struct HRVTrendCard: View {
             SectionHeader(title: "HRV trend", subtitle: rangeText)
             Spacer()
             Image(systemName: "chevron.right")
-                .font(.caption2.weight(.semibold))
+                .font(Font.fs(.caption2, .semibold))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -58,24 +58,24 @@ struct HRVTrendCard: View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(Format.prettyDay(date, today: model.today))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(Format.number(data.latest))
-                        .font(Theme.number(30))
+                        .font(Font.fredoka(30))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                     if data.latest != nil {
                         Text(data.def.unit)
-                            .font(Theme.number(15, weight: .semibold))
+                            .font(Font.fredoka(15, weight: .semibold))
                             .foregroundStyle(Theme.secondary)
                     }
                     DeltaBadge(change: change, better: data.def.better)
                         .padding(.leading, 2)
                 }
                 Text(baselineText(data))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -89,7 +89,7 @@ struct HRVTrendCard: View {
 
     private func statusPill(_ position: HRVTrendPosition) -> some View {
         Text(position.label)
-            .font(.caption2.weight(.semibold))
+            .font(Font.fs(.caption2, .semibold))
             .lineLimit(1)
             .foregroundStyle(position.color)
             .padding(.horizontal, 8)
@@ -108,7 +108,7 @@ struct HRVTrendCard: View {
             legend(data)
         } else {
             Text("Only one day with HRV in these 30 days, not enough for a trend yet.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -120,14 +120,14 @@ struct HRVTrendCard: View {
                     .fill(Self.tint.opacity(0.3))
                     .frame(width: 12, height: 8)
                 Text("Normal range \(bandText(band, data.def)) (mean ± 1 SD, \(band.count) days with HRV in the \(windowDays) before \(Format.shortDay(date)))")
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.tertiary)
                     .lineLimit(2)
             }
             .accessibilityHidden(true)
         } else {
             Text("The normal range appears once \(Self.minBandDays) of the \(windowDays) days before \(Format.shortDay(date)) have HRV.")
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
                 .lineLimit(2)
         }

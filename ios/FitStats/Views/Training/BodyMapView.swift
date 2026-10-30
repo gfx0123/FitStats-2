@@ -32,7 +32,7 @@ struct BodyMapView: View {
             }
             .frame(width: height * shapes.aspect, height: height)
             if showsLabels {
-                Text(front ? "Front" : "Back").font(.caption2).foregroundStyle(Theme.tertiary)
+                Text(front ? "Front" : "Back").font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
             }
         }
     }
@@ -197,7 +197,7 @@ struct MuscleChips: View {
 
     private func chip(_ label: String, main: Bool) -> some View {
         Text(label)
-            .font(.caption.weight(main ? .semibold : .regular))
+            .font(Font.fs(.caption, main ? .semibold : .regular))
             .padding(.horizontal, 9)
             .padding(.vertical, 4)
             .background(Capsule().fill(main ? Theme.muscle.opacity(0.22) : Color.clear))

@@ -295,7 +295,7 @@ struct HomeEditCell<Content: View>: View {
             .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Color.white.opacity(0.08)))
             .overlay {
                 Label("Release to stack", systemImage: HomeCard.stack.icon)
-                    .font(.subheadline.weight(.semibold))
+                    .font(Font.fs(.subheadline, .semibold))
                     .foregroundStyle(.black)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -372,7 +372,7 @@ struct HomeEditCell<Content: View>: View {
     private var removeButton: some View {
         Button(action: onRemove) {
             Image(systemName: "minus")
-                .font(.system(size: 12, weight: .heavy))
+                .font(Font.fredoka(12, weight: .heavy))
                 .foregroundStyle(.white)
                 .frame(width: 26, height: 26)
                 .background(Circle().fill(Color(white: 0.32)))
@@ -488,7 +488,7 @@ struct HomeResizeDot: View {
 
     var body: some View {
         Image(systemName: leftward ? "arrow.up.right.and.arrow.down.left" : "arrow.up.left.and.arrow.down.right")
-            .font(.system(size: 11, weight: .bold))
+            .font(Font.fredoka(11, weight: .bold))
             .foregroundStyle(.black)
             .frame(width: 26, height: 26)
             .background(Circle().fill(.white))
@@ -542,14 +542,14 @@ struct HomeCardPlaceholder: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Image(systemName: card.icon)
-                .font(.title3)
+                .font(Font.fs(.title3))
                 .foregroundStyle(Theme.tertiary)
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .font(Font.fs(.subheadline, .semibold))
                 .foregroundStyle(Theme.secondary)
                 .lineLimit(2)
             Text(reason)
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
                 .lineLimit(3)
             Spacer(minLength: 0)

@@ -14,7 +14,7 @@ struct LiveHeartRateHomeCard: View {
                 SectionHeader(title: "Live heart rate", subtitle: "From your Fitbit Air over Bluetooth")
                 Spacer()
                 NavigationLink(value: DetailRoute.liveHeartRate) {
-                    Image(systemName: "arrow.up.left.and.arrow.down.right").font(.caption)
+                    Image(systemName: "arrow.up.left.and.arrow.down.right").font(Font.fs(.caption))
                 }
                 .accessibilityLabel("Open live heart rate")
             }
@@ -22,11 +22,11 @@ struct LiveHeartRateHomeCard: View {
                 Image(systemName: "heart.fill")
                     .foregroundStyle(isLive ? Theme.heart : Theme.tertiary)
                     .symbolEffect(.bounce, value: live.samples.last?.id ?? 0)
-                Text(bpmText).font(Theme.number(40))
+                Text(bpmText).font(Font.fredoka(40))
                 Text("bpm").foregroundStyle(Theme.secondary)
                 Spacer()
             }
-            Text(caption).font(.caption).foregroundStyle(Theme.tertiary)
+            Text(caption).font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
         }
         .onAppear { if !isPreview { live.start() } }
         .onDisappear { if !isPreview { live.stop() } }

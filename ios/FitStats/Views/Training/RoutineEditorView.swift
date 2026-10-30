@@ -24,7 +24,7 @@ struct RoutineEditorView: View {
             Form {
                 Section {
                     TextField("Name, like Upper body A", text: $routine.name)
-                        .font(.headline)
+                        .font(Font.fs(.headline))
                         .accessibilityIdentifier("routine-name")
                     TextField("Notes (optional)", text: Binding(get: { routine.notes ?? "" }, set: { routine.notes = $0.isEmpty ? nil : $0 }), axis: .vertical)
                         .lineLimit(1...4)
@@ -34,10 +34,10 @@ struct RoutineEditorView: View {
                         NavigationLink(value: e.id) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Label(e.name.isEmpty ? "New exercise" : e.name, systemImage: e.kind.icon)
-                                    .font(.subheadline.weight(.semibold))
+                                    .font(Font.fs(.subheadline, .semibold))
                                     .foregroundStyle(e.name.isEmpty ? Theme.tertiary : .white)
                                 if !e.plan.isEmpty {
-                                    Text(e.plan).font(.caption).foregroundStyle(Theme.secondary)
+                                    Text(e.plan).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                                 }
                             }
                         }
@@ -60,7 +60,7 @@ struct RoutineEditorView: View {
                             Button(editMode.isEditing ? "Done" : "Reorder") {
                                 withAnimation { editMode = editMode.isEditing ? .inactive : .active }
                             }
-                            .font(.caption.weight(.semibold))
+                            .font(Font.fs(.caption, .semibold))
                             .textCase(nil)
                         }
                     }
@@ -68,7 +68,7 @@ struct RoutineEditorView: View {
                     Text("Swipe an exercise left to remove it. Logging this routine fills in these targets, or the weights you lifted last time when there is no target.")
                 }
                 if let error {
-                    Section { Text(error).font(.footnote).foregroundStyle(Theme.recoveryRed) }
+                    Section { Text(error).font(Font.fs(.footnote)).foregroundStyle(Theme.recoveryRed) }
                 }
                 if !isNew {
                     Section {
@@ -81,7 +81,7 @@ struct RoutineEditorView: View {
             }
             .environment(\.editMode, $editMode)
             .scrollContentBackground(.hidden)
-            .background(Theme.background.ignoresSafeArea())
+            .background(AppBackground())
             .navigationTitle(isNew ? "New routine" : "Edit routine")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -213,7 +213,7 @@ struct ExerciseEditorView: View {
             musclesSection
         }
         .scrollContentBackground(.hidden)
-        .background(Theme.background.ignoresSafeArea())
+        .background(AppBackground())
         .navigationTitle(exercise.name.isEmpty ? "Exercise" : exercise.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -249,7 +249,7 @@ struct ExerciseEditorView: View {
                                 exercise.muscles = chosen.isEmpty ? nil : chosen
                             } label: {
                                 Text(m.label)
-                                    .font(.caption.weight(.semibold))
+                                    .font(Font.fs(.caption, .semibold))
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 6)
                                     .background(Capsule().fill(on ? Theme.muscle.opacity(0.25) : Color.white.opacity(0.07)))

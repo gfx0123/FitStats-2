@@ -29,18 +29,18 @@ struct SleepPlanCard: View {
                 if plan.napMin > 0 { part("−\(Format.duration(plan.napMin)) naps") }
             }
             Text(explanation)
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
             Button { editingWakeTimes = true } label: {
                 Label(model.wakeTimes == nil ? "Set your wake-up times" : "Wake-up times", systemImage: "alarm")
-                    .font(.caption.weight(.semibold))
+                    .font(Font.fs(.caption, .semibold))
                     .foregroundStyle(Theme.sleep)
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("tonight-wake-times")
             if denied {
                 Button("Notifications are off for FitStats. Open Settings") { Reminders.openSystemSettings() }
-                    .font(.caption.weight(.semibold))
+                    .font(Font.fs(.caption, .semibold))
             }
         }
         .accessibilityElement(children: .contain)
@@ -73,7 +73,7 @@ struct SleepPlanCard: View {
         } label: {
             Label(reminderOn ? "Reminder on" : "Remind me",
                   systemImage: reminderOn ? "bell.fill" : (denied ? "bell.slash" : "bell"))
-                .font(.caption.weight(.semibold))
+                .font(Font.fs(.caption, .semibold))
                 .foregroundStyle(reminderOn ? Theme.sleep : Theme.secondary)
         }
         .buttonStyle(.plain)
@@ -97,14 +97,14 @@ struct SleepPlanCard: View {
 
     private func stat(_ title: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.caption).foregroundStyle(Theme.secondary)
-            Text(value).font(Theme.number(22))
+            Text(title).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
+            Text(value).font(Font.fredoka(22))
         }
     }
 
     private func part(_ text: String) -> some View {
         Text(text)
-            .font(.caption2.weight(.medium))
+            .font(Font.fs(.caption2, .medium))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(Capsule().fill(Theme.sleep.opacity(0.16)))

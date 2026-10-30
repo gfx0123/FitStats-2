@@ -54,7 +54,7 @@ struct ThisWeekCard: View {
                 }
                 if let note = footnote(current: current, previous: previous, rows: rows) {
                     Text(note)
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(Theme.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -83,7 +83,7 @@ struct ThisWeekCard: View {
             Text("vs prev")
                 .frame(minWidth: Self.deltaWidth, alignment: .trailing)
         }
-        .font(.caption2)
+        .font(Font.fs(.caption2))
         .foregroundStyle(Theme.tertiary)
         .lineLimit(1)
         .accessibilityHidden(true)
@@ -94,20 +94,20 @@ struct ThisWeekCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 5) {
                     Image(systemName: row.def.icon)
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(row.tint)
                     Text(row.def.shortLabel)
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
                         .lineLimit(1)
                 }
                 Text(row.current.value.map { row.def.formatted($0) } ?? "–")
-                    .font(Theme.number(18, weight: .semibold))
+                    .font(Font.fredoka(18, weight: .semibold))
                     .foregroundStyle(row.current.value == nil ? Theme.tertiary : Color.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 Text(caption(row))
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.tertiary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -132,12 +132,12 @@ struct ThisWeekCard: View {
                 DeltaBadge(change: change, better: row.def.better)
             } else {
                 Text(verbatim: "≈ 0%")
-                    .font(.caption2.weight(.semibold))
+                    .font(Font.fs(.caption2, .semibold))
                     .foregroundStyle(Theme.secondary)
             }
         } else {
             Text("–")
-                .font(.caption2)
+                .font(Font.fs(.caption2))
                 .foregroundStyle(Theme.tertiary)
         }
     }

@@ -65,7 +65,7 @@ struct BodyCard: View {
                         Text(changeText(def, first: first, last: last))
                             .monospacedDigit()
                     }
-                    .font(.caption2)
+                    .font(Font.fs(.caption2))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
@@ -76,7 +76,7 @@ struct BodyCard: View {
                         .accessibilityLabel("Weight sparkline, \(Self.windowDays) days ending \(spokenLongDay(date))")
                         .accessibilityValue(spokenTrend(def, points))
                     Text(rangeText(def, points))
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(Theme.tertiary)
                         .monospacedDigit()
                         .lineLimit(1)
@@ -85,7 +85,7 @@ struct BodyCard: View {
                 }
             } else {
                 Text(sparseText(points.count))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -95,11 +95,11 @@ struct BodyCard: View {
     private var emptyState: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "scalemass")
-                .font(.title3)
+                .font(Font.fs(.title3))
                 .foregroundStyle(Theme.tertiary)
                 .accessibilityHidden(true)
             Text("No weigh-ins yet. A smart scale or weights logged in the Google Health app appear here.")
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }

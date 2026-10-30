@@ -32,14 +32,14 @@ struct BedtimeConsistencyCard: View {
                 }
                 .frame(height: CGFloat(nights.count) * Self.rowHeight + 22)
                 Text(summary(beds: beds, wakes: wakes, usualBed: usualBed, usualWake: usualWake))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 12) {
                     legend(Capsule().fill(Theme.sleep), "Asleep")
                     legend(Rectangle().stroke(style: StrokeStyle(lineWidth: 1, dash: [3, 3])).foregroundStyle(Theme.secondary), "Usual times")
                     if nights.contains(where: { $0.setWake != nil }) {
-                        legend(Image(systemName: "diamond.fill").font(.system(size: 7)).foregroundStyle(Theme.recoveryYellow), "Wake-up you set")
+                        legend(Image(systemName: "diamond.fill").font(Font.fredoka(7, weight: .regular)).foregroundStyle(Theme.recoveryYellow), "Wake-up you set")
                     }
                 }
             }
@@ -72,13 +72,13 @@ struct BedtimeConsistencyCard: View {
             line.move(to: CGPoint(x: x(tick), y: 0))
             line.addLine(to: CGPoint(x: x(tick), y: rowsBottom))
             ctx.stroke(line, with: .color(Theme.track), lineWidth: 0.5)
-            ctx.draw(Text(Format.clock(tick)).font(.caption2).foregroundColor(Theme.tertiary), at: CGPoint(x: x(tick), y: rowsBottom + 4), anchor: .top)
+            ctx.draw(Text(Format.clock(tick)).font(Font.fs(.caption2)).foregroundColor(Theme.tertiary), at: CGPoint(x: x(tick), y: rowsBottom + 4), anchor: .top)
             tick += 120
         }
         for (i, n) in nights.enumerated() {
             let y = CGFloat(i) * rowHeight + rowHeight / 2
             let label = Format.date(n.date).map { dayFormatter.string(from: $0) } ?? n.date
-            ctx.draw(Text(label).font(.caption2).foregroundColor(Theme.secondary), at: CGPoint(x: 0, y: y), anchor: .leading)
+            ctx.draw(Text(label).font(Font.fs(.caption2)).foregroundColor(Theme.secondary), at: CGPoint(x: 0, y: y), anchor: .leading)
             let bar = CGRect(x: x(n.bed), y: y - 4.5, width: max(4, x(n.wake) - x(n.bed)), height: 9)
             ctx.fill(Path(roundedRect: bar, cornerRadius: 4.5), with: .color(Theme.sleep))
             if let set = n.setWake {
@@ -103,7 +103,7 @@ struct BedtimeConsistencyCard: View {
     private func legend(_ mark: some View, _ text: String) -> some View {
         HStack(spacing: 4) {
             mark.frame(width: 10, height: 6)
-            Text(text).font(.caption2).foregroundStyle(Theme.tertiary)
+            Text(text).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
         }
     }
 

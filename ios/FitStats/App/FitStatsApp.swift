@@ -9,6 +9,7 @@ struct FitStatsApp: App {
 
     init() {
         UNUserNotificationCenter.current().delegate = ReminderDelegate.shared
+        Fredoka.applyToUIKit()
     }
 
     var body: some Scene {
@@ -20,6 +21,7 @@ struct FitStatsApp: App {
                 .environmentObject(live)
                 .preferredColorScheme(.dark)
                 .tint(Theme.recoveryGreen)
+                .font(.fs(.body))
                 .onOpenURL { url in model.handleCallback(url) }
                 .onAppear {
                     ReminderDelegate.shared.onOpen = { [model] route in
@@ -50,7 +52,7 @@ struct RootView: View {
                 MainTabs()
             }
         }
-        .background(Theme.background.ignoresSafeArea())
+        .background(AppBackground())
         // The body map's figures follow Settings → Sex.
         .environment(\.bodyFigure, model.status?.settings.sex == "female" ? .female : .male)
     }

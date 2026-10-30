@@ -48,14 +48,14 @@ struct StressDayCard: View {
             Spacer(minLength: 8)
             if soFar {
                 Text("so far")
-                    .font(.caption2.weight(.semibold))
+                    .font(Font.fs(.caption2, .semibold))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
                     .background(Capsule().fill(Theme.stress.opacity(0.16)))
                     .foregroundStyle(Theme.stress)
             }
             Image(systemName: "chevron.right")
-                .font(.caption2.weight(.semibold))
+                .font(Font.fs(.caption2, .semibold))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -65,17 +65,17 @@ struct StressDayCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(Format.number(score))
-                        .font(Theme.number(30))
+                        .font(Font.fredoka(30))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                     Text(scoreLabel(score, soFar: soFar))
-                        .font(.subheadline.weight(.semibold))
+                        .font(Font.fs(.subheadline, .semibold))
                         .foregroundStyle(Theme.stressColor(score))
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                 }
                 Text(soFar ? "Day score so far" : "Day score")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
             }
@@ -83,11 +83,11 @@ struct StressDayCard: View {
             if let peak {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(Format.number(peak.value))
-                        .font(Theme.number(20, weight: .semibold))
+                        .font(Font.fredoka(20, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                     Text("Peak \(hourRange(peak.hour))")
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
                         .monospacedDigit()
                         .lineLimit(1)
@@ -100,7 +100,7 @@ struct StressDayCard: View {
     @ViewBuilder private func chart(hourly: [Double?], hours: [StressDayHour], soFar: Bool) -> some View {
         if hours.isEmpty {
             Text(soFar ? "No hourly stress yet today." : "No hourly breakdown for this day.")
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.tertiary)
         } else {
             HourlyBarsChart(values: hourly, colorFor: { Theme.stressColor($0) })
@@ -123,7 +123,7 @@ struct StressDayCard: View {
             }
             Spacer(minLength: 0)
         }
-        .font(.caption2)
+        .font(Font.fs(.caption2))
         .foregroundStyle(Theme.secondary)
         .lineLimit(1)
         .minimumScaleFactor(0.8)
@@ -136,12 +136,12 @@ struct StressDayCard: View {
         if let day {
             if let minutes = day.double("stress_minutes"), minutes.isFinite, minutes > 0 {
                 Text(minutesText(minutes, soFar: soFar))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
             }
             if !soFar, day.bool("low_wear") == true {
                 Label(lowWearText(day), systemImage: "exclamationmark.circle")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.recoveryYellow)
             }
         }

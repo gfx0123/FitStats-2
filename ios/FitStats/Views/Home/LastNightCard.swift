@@ -33,7 +33,7 @@ struct LastNightCard: View {
             SectionHeader(title: "Last night", subtitle: subtitle)
             Spacer()
             Image(systemName: "chevron.right")
-                .font(.caption2.weight(.semibold))
+                .font(Font.fs(.caption2, .semibold))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -44,11 +44,11 @@ struct LastNightCard: View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Time asleep")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(Format.duration(day.double("sleep_asleep_min")))
-                        .font(Theme.number(34))
+                        .font(Font.fredoka(34))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
@@ -58,7 +58,7 @@ struct LastNightCard: View {
                     Image(systemName: "bed.double.fill")
                     Text(window(day)).monospacedDigit()
                 }
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.secondary)
             }
             Spacer(minLength: 8)
@@ -66,7 +66,7 @@ struct LastNightCard: View {
         }
         if stages.isEmpty {
             Text("Sleep stages weren't recorded for this night.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         } else {
             LastNightStageBar(parts: stages)
@@ -86,7 +86,7 @@ struct LastNightCard: View {
         VStack(spacing: 4) {
             RingGauge(progress: min(1, max(0, (score ?? 0) / 100)), color: Theme.sleep, lineWidth: 6) {
                 Text(score.map { Format.number($0) } ?? "–")
-                    .font(Theme.number(18))
+                    .font(Font.fredoka(18))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
@@ -94,7 +94,7 @@ struct LastNightCard: View {
             }
             .frame(width: 58, height: 58)
             Text(score == nil ? "No score" : "Sleep score")
-                .font(.caption2.weight(.semibold))
+                .font(Font.fs(.caption2, .semibold))
                 .foregroundStyle(Theme.secondary)
                 .lineLimit(1)
         }
@@ -107,12 +107,12 @@ struct LastNightCard: View {
                     HStack(spacing: 4) {
                         Circle().fill(part.color).frame(width: 7, height: 7)
                         Text(part.name)
-                            .font(.caption2)
+                            .font(Font.fs(.caption2))
                             .foregroundStyle(Theme.secondary)
                             .lineLimit(1)
                     }
                     Text(Format.duration(part.minutes))
-                        .font(Theme.number(14, weight: .semibold))
+                        .font(Font.fredoka(14, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -125,11 +125,11 @@ struct LastNightCard: View {
     private func stat(_ title: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.secondary)
                 .lineLimit(1)
             Text(value)
-                .font(Theme.number(17, weight: .semibold))
+                .font(Font.fredoka(17, weight: .semibold))
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)

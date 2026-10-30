@@ -52,10 +52,10 @@ struct WorkoutLoggerView: View {
                 }
                 Button { addingExercise = true } label: {
                     Label("Add exercise", systemImage: "plus.circle.fill")
-                        .font(.subheadline.weight(.semibold))
+                        .font(Font.fs(.subheadline, .semibold))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 13)
-                        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.card))
+                        .background(Glass(cornerRadius: 16))
                         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Theme.cardBorder, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
@@ -123,7 +123,7 @@ struct WorkoutLoggerView: View {
     private func header(_ log: Binding<WorkoutLog>) -> some View {
         Card {
             TextField("Name", text: log.name)
-                .font(.title3.weight(.semibold))
+                .font(Font.fs(.title3, .semibold))
                 .accessibilityIdentifier("logger-name")
             HStack(spacing: 14) {
                 if workout.editing {
@@ -143,13 +143,13 @@ struct WorkoutLoggerView: View {
                     Menu {
                         Button("Discard workout", systemImage: "trash", role: .destructive) { confirmDiscard = true }
                     } label: {
-                        Image(systemName: "ellipsis.circle").font(.title3)
+                        Image(systemName: "ellipsis.circle").font(Font.fs(.title3))
                     }
                     .accessibilityLabel("More")
                     .accessibilityIdentifier("logger-more")
                 }
             }
-            .font(.footnote)
+            .font(Font.fs(.footnote))
             .foregroundStyle(Theme.secondary)
         }
     }
@@ -172,20 +172,20 @@ private struct LoggedExerciseCard: View {
         Card {
             HStack(alignment: .firstTextBaseline) {
                 Label(exercise.name, systemImage: exercise.kind.icon)
-                    .font(.headline)
+                    .font(Font.fs(.headline))
                     .labelStyle(.titleAndIcon)
                 Spacer()
                 Menu {
                     Button(showNotes || exercise.notes != nil ? "Notes" : "Add a note", systemImage: "note.text") { showNotes = true }
                     Button("Remove exercise", systemImage: "trash", role: .destructive, action: onRemove)
                 } label: {
-                    Image(systemName: "ellipsis").font(.body.weight(.semibold)).frame(width: 32, height: 24)
+                    Image(systemName: "ellipsis").font(Font.fs(.body, .semibold)).frame(width: 32, height: 24)
                 }
                 .accessibilityLabel("\(exercise.name) options")
             }
             if let last {
                 Text("Last time: \(LoggedSet.compact(last))")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
                     .lineLimit(2)
             }
@@ -200,7 +200,7 @@ private struct LoggedExerciseCard: View {
                     next.done = false
                     exercise.sets.append(next)
                 } label: {
-                    Label("Add set", systemImage: "plus").font(.footnote.weight(.semibold))
+                    Label("Add set", systemImage: "plus").font(Font.fs(.footnote, .semibold))
                 }
                 .disabled(exercise.sets.count >= 30)
                 .accessibilityIdentifier("logger-add-set")
@@ -209,7 +209,7 @@ private struct LoggedExerciseCard: View {
                     Button {
                         exercise.sets.removeLast()
                     } label: {
-                        Label("Remove set", systemImage: "minus").font(.footnote.weight(.semibold))
+                        Label("Remove set", systemImage: "minus").font(Font.fs(.footnote, .semibold))
                     }
                     .tint(Theme.secondary)
                 }
@@ -217,7 +217,7 @@ private struct LoggedExerciseCard: View {
             .buttonStyle(.borderless)
             if showNotes || exercise.notes != nil {
                 TextField("Notes for this exercise", text: Binding(get: { exercise.notes ?? "" }, set: { exercise.notes = $0.isEmpty ? nil : $0 }), axis: .vertical)
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .lineLimit(1...4)
             }
         }
@@ -241,7 +241,7 @@ private struct LoggedExerciseCard: View {
             Text(exercise.kind.timed ? "KM" : "REPS").frame(maxWidth: .infinity)
             Image(systemName: "checkmark").frame(width: 44)
         }
-        .font(.caption2.weight(.semibold))
+        .font(Font.fs(.caption2, .semibold))
         .foregroundStyle(Theme.tertiary)
     }
 }
@@ -254,7 +254,7 @@ private struct SetRow: View {
     var body: some View {
         HStack(spacing: 8) {
             Text("\(number)")
-                .font(.subheadline.weight(.semibold).monospacedDigit())
+                .font(Font.fs(.subheadline, .semibold).monospacedDigit())
                 .foregroundStyle(Theme.secondary)
                 .frame(width: 34, alignment: .leading)
             if timed {
@@ -271,7 +271,7 @@ private struct SetRow: View {
                 if set.done { Haptics.tap() }
             } label: {
                 Image(systemName: set.done ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
+                    .font(Font.fs(.title2))
                     .foregroundStyle(set.done ? Theme.recoveryGreen : Theme.tertiary)
                     .frame(width: 44, height: 36)
             }
@@ -285,7 +285,7 @@ private struct SetRow: View {
 
     private func field(_ f: NumberField) -> some View {
         f.multilineTextAlignment(.center)
-            .font(.body.weight(.semibold))
+            .font(Font.fs(.body, .semibold))
             .padding(.vertical, 7)
             .frame(maxWidth: .infinity)
             .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.white.opacity(0.07)))
@@ -312,7 +312,7 @@ private struct FinishWorkoutSheet: View {
                     }
                     if log.doneSetCount == 0 {
                         Text("No set is ticked yet. Only ticked sets count as done.")
-                            .font(.footnote)
+                            .font(Font.fs(.footnote))
                             .foregroundStyle(Theme.recoveryYellow)
                     }
                 }
@@ -331,11 +331,11 @@ private struct FinishWorkoutSheet: View {
                         .environment(\.timeZone, Format.utc)
                 }
                 if let error {
-                    Section { Text(error).font(.footnote).foregroundStyle(Theme.recoveryRed) }
+                    Section { Text(error).font(Font.fs(.footnote)).foregroundStyle(Theme.recoveryRed) }
                 }
             }
             .scrollContentBackground(.hidden)
-            .background(Theme.background.ignoresSafeArea())
+            .background(AppBackground())
             .navigationTitle(workout.editing ? "Save changes" : "Finish workout")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -368,8 +368,8 @@ private struct FinishWorkoutSheet: View {
 
     private func summary(_ title: String, _ value: String) -> some View {
         VStack(spacing: 2) {
-            Text(value).font(Theme.number(20))
-            Text(title).font(.caption).foregroundStyle(Theme.secondary)
+            Text(value).font(Font.fredoka(20))
+            Text(title).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -381,7 +381,7 @@ private struct FinishWorkoutSheet: View {
                     log.effort = log.effort == n ? nil : n
                 } label: {
                     Text("\(n)")
-                        .font(.subheadline.weight(.semibold).monospacedDigit())
+                        .font(Font.fs(.subheadline, .semibold).monospacedDigit())
                         .frame(maxWidth: .infinity, minHeight: 34)
                         .background(RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(log.effort == n ? Effort.color(n) : Color.white.opacity(0.07)))

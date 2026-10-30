@@ -43,7 +43,7 @@ struct LoadStatusPill: View {
     var body: some View {
         let color = TrainingLoadStatus.color(status)
         Text(TrainingLoadStatus.label(status))
-            .font(.caption.weight(.semibold))
+            .font(Font.fs(.caption, .semibold))
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
             .background(Capsule().fill(color.opacity(0.16)))
@@ -130,7 +130,7 @@ struct TrainingLoadCard: View {
             if let load, !load.series.isEmpty {
                 if load.status == "calibrating" {
                     Label(TrainingLoadStatus.calibratingText(load, today: today), systemImage: "hourglass")
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
                 }
                 summary(load)
@@ -139,14 +139,14 @@ struct TrainingLoadCard: View {
                 acwr(load)
             } else {
                 Text(emptyText)
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
             }
             Text("Fresh: fitness above fatigue, you are rested. Neutral: the two roughly balance. Productive: fatigue above fitness, the normal state while training builds you up. Overreaching: fatigue far above fitness; ease off for a few days.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
             Text("Fitness is a 42-day weighted average of your daily load, fatigue a 7-day one, and form is fitness minus fatigue. Today is left out until it is over.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
         .accessibilityElement(children: .contain)
@@ -162,11 +162,11 @@ struct TrainingLoadCard: View {
         let latest = load.latest
         return HStack(alignment: .bottom) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Form").font(.caption).foregroundStyle(Theme.secondary)
+                Text("Form").font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                 HStack(alignment: .center, spacing: 8) {
                     // 1 decimal, as sent: the server takes form from the rounded fitness and fatigue, so the three add up.
                     Text(Format.signed(latest?.form, decimals: 1))
-                        .font(Theme.number(30))
+                        .font(Font.fredoka(30))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                     LoadStatusPill(status: load.status)
@@ -183,9 +183,9 @@ struct TrainingLoadCard: View {
 
     private func valueRow(_ title: String, _ value: Double?, color: Color) -> some View {
         HStack(spacing: 6) {
-            Text(title).font(.caption).foregroundStyle(Theme.secondary)
+            Text(title).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
             Text(Format.number(value, decimals: 1))
-                .font(Theme.number(17, weight: .semibold))
+                .font(Font.fredoka(17, weight: .semibold))
                 .foregroundStyle(color)
         }
     }
@@ -202,7 +202,7 @@ struct TrainingLoadCard: View {
     private func legendItem(_ title: String, _ color: Color) -> some View {
         HStack(spacing: 5) {
             Capsule().fill(color).frame(width: 14, height: 3)
-            Text(title).font(.caption2).foregroundStyle(Theme.secondary)
+            Text(title).font(Font.fs(.caption2)).foregroundStyle(Theme.secondary)
         }
     }
 
@@ -214,15 +214,15 @@ struct TrainingLoadCard: View {
         if load.spike {
             Label("Load spike: your last 7 days averaged at least 1.5 times your last 28. Jumps like this are harder to recover from, so consider building up more gradually.",
                   systemImage: "exclamationmark.triangle.fill")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.recoveryRed)
         } else if ratio == nil {
             Text("The ratio needs a daily load on at least 21 of the last 28 days.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         } else {
             Text("Your last 7 days' average load divided by your last 28 days'. 1.5 or more counts as a spike.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }

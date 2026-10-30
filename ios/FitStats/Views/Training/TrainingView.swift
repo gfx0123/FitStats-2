@@ -78,15 +78,15 @@ struct TrainingView: View {
             workout.presented = true
         } label: {
             HStack(spacing: 12) {
-                Image(systemName: "timer").font(.title3).foregroundStyle(Theme.strain)
+                Image(systemName: "timer").font(Font.fs(.title3)).foregroundStyle(Theme.strain)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(workout.editing ? "Editing \(active.name)" : "\(active.name) in progress")
-                        .font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+                        .font(Font.fs(.subheadline, .semibold)).foregroundStyle(.white)
                     Text("\(active.doneSetCount) sets done · tap to go back to it")
-                        .font(.caption).foregroundStyle(Theme.secondary)
+                        .font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(Theme.tertiary)
+                Image(systemName: "chevron.right").font(Font.fs(.caption, .semibold)).foregroundStyle(Theme.tertiary)
             }
             .padding(14)
             .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.strain.opacity(0.16)))
@@ -108,7 +108,7 @@ struct TrainingView: View {
                 Button {
                     workout.start(WorkoutLog.start(from: nil, date: model.today, previous: model.workoutLogs))
                 } label: {
-                    Label("Empty workout", systemImage: "plus.circle.fill").font(.caption.weight(.semibold))
+                    Label("Empty workout", systemImage: "plus.circle.fill").font(Font.fs(.caption, .semibold))
                 }
                 .disabled(workout.log != nil)
                 .accessibilityIdentifier("training-start-empty")
@@ -136,15 +136,15 @@ struct TrainingView: View {
                 let band = model.bandWorkouts.first { $0.date == day }
                 VStack(spacing: 5) {
                     Text(Format.weekdayLetter(day))
-                        .font(.caption2.weight(.semibold))
+                        .font(Font.fs(.caption2, .semibold))
                         .foregroundStyle(day == model.today ? .white : Theme.tertiary)
                     ZStack {
                         if logged {
                             Circle().fill(Theme.strain)
-                            Image(systemName: "dumbbell.fill").font(.system(size: 11, weight: .bold)).foregroundStyle(.white)
+                            Image(systemName: "dumbbell.fill").font(Font.fredoka(11, weight: .bold)).foregroundStyle(.white)
                         } else if let band {
                             Circle().fill(Theme.heart.opacity(0.2))
-                            Image(systemName: band.symbol).font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.heart)
+                            Image(systemName: band.symbol).font(Font.fredoka(12, weight: .semibold)).foregroundStyle(Theme.heart)
                         } else {
                             Circle().strokeBorder(day > model.today ? Theme.track : Color.white.opacity(0.16), lineWidth: 1.5)
                         }
@@ -167,9 +167,9 @@ struct TrainingView: View {
 
     private func stat(_ title: String, _ value: String, _ unit: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.caption).foregroundStyle(Theme.secondary)
-            Text(value).font(Theme.number(22))
-            Text(unit).font(.caption2).foregroundStyle(Theme.tertiary)
+            Text(title).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
+            Text(value).font(Font.fredoka(22))
+            Text(unit).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
         }
     }
 
@@ -222,7 +222,7 @@ struct TrainingView: View {
             } else {
                 ForEach(HistoryWeek.group(shown)) { week in
                     Text(weekTitle(week.monday))
-                        .font(.caption.weight(.semibold))
+                        .font(Font.fs(.caption, .semibold))
                         .foregroundStyle(Theme.secondary)
                         .padding(.top, 4)
                     Card(padding: 0) {
@@ -236,7 +236,7 @@ struct TrainingView: View {
                 }
                 if entries.count > shown.count || showAllHistory {
                     Button(showAllHistory ? "Show fewer" : "Show all \(entries.count)") { showAllHistory.toggle() }
-                        .font(.footnote.weight(.semibold))
+                        .font(Font.fs(.footnote, .semibold))
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -357,27 +357,27 @@ struct HistoryRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.subheadline)
+                .font(Font.fs(.subheadline))
                 .foregroundStyle(tint)
                 .frame(width: 32, height: 32)
                 .background(Circle().fill(tint.opacity(0.15)))
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(.white).lineLimit(1)
+                    Text(title).font(Font.fs(.subheadline, .semibold)).foregroundStyle(.white).lineLimit(1)
                     Text(badge)
-                        .font(.caption2.weight(.semibold))
+                        .font(Font.fs(.caption2, .semibold))
                         .foregroundStyle(Theme.secondary)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 1)
                         .background(Capsule().fill(Color.white.opacity(0.08)))
                 }
                 Text(detail.isEmpty ? Format.prettyDay(date, today: model.today) : "\(Format.prettyDay(date, today: model.today)) · \(detail)")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(2)
             }
             Spacer(minLength: 4)
-            Image(systemName: "chevron.right").font(.caption2.weight(.semibold)).foregroundStyle(Theme.tertiary)
+            Image(systemName: "chevron.right").font(Font.fs(.caption2, .semibold)).foregroundStyle(Theme.tertiary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
@@ -393,17 +393,17 @@ struct RoutineCard: View {
     var body: some View {
         Card {
             HStack(alignment: .firstTextBaseline) {
-                Text(routine.name).font(.headline).foregroundStyle(.white).lineLimit(1)
+                Text(routine.name).font(Font.fs(.headline)).foregroundStyle(.white).lineLimit(1)
                 if routine.byCoach { CoachBadge() }
                 Spacer()
-                Image(systemName: "chevron.right").font(.caption2.weight(.semibold)).foregroundStyle(Theme.tertiary)
+                Image(systemName: "chevron.right").font(Font.fs(.caption2, .semibold)).foregroundStyle(Theme.tertiary)
             }
             Text(routine.exercises.isEmpty ? "No exercises yet" : routine.exercises.prefix(4).map(\.name).joined(separator: " · ") + (routine.exercises.count > 4 ? " · +\(routine.exercises.count - 4)" : ""))
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.secondary)
                 .lineLimit(2)
             Text(lastDone.map { "Last done \(Format.prettyDay($0, today: model.today).lowercasedIfDay)" } ?? "Not done yet")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -412,7 +412,7 @@ struct RoutineCard: View {
 struct CoachBadge: View {
     var body: some View {
         Label("Coach", systemImage: "sparkles")
-            .font(.caption2.weight(.semibold))
+            .font(Font.fs(.caption2, .semibold))
             .foregroundStyle(Theme.sleep)
             .padding(.horizontal, 7)
             .padding(.vertical, 2)
@@ -435,7 +435,7 @@ struct AskCoachRow: View {
                     let prompt = prompts[i]
                     Button { model.askCoach(prompt.2) } label: {
                         Label(prompt.1, systemImage: prompt.0)
-                            .font(.footnote.weight(.semibold))
+                            .font(Font.fs(.footnote, .semibold))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                             .background(Capsule().fill(Theme.sleep.opacity(0.16)))

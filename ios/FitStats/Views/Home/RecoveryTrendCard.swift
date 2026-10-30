@@ -43,7 +43,7 @@ struct RecoveryTrendCard: View {
             SectionHeader(title: "Recovery trend", subtitle: rangeText(trend))
             Spacer()
             Image(systemName: "chevron.right")
-                .font(.caption2.weight(.semibold))
+                .font(Font.fs(.caption2, .semibold))
                 .foregroundStyle(Theme.tertiary)
         }
     }
@@ -54,26 +54,26 @@ struct RecoveryTrendCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text(Format.number(average))
-                        .font(Theme.number(30))
+                        .font(Font.fredoka(30))
                         .foregroundStyle(.white)
                         .lineLimit(1)
                     Text("%")
-                        .font(Theme.number(16, weight: .semibold))
+                        .font(Font.fredoka(16, weight: .semibold))
                         .foregroundStyle(Theme.secondary)
                 }
                 Text(averageCaption(count: count, total: total))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 2) {
                 Text(latest.map { "\(Format.number($0))%" } ?? "–")
-                    .font(Theme.number(20, weight: .semibold))
+                    .font(Font.fredoka(20, weight: .semibold))
                     .foregroundStyle(Theme.recoveryColor(latest))
                     .lineLimit(1)
                 Text(Format.prettyDay(date, today: model.today))
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
                     .lineLimit(1)
             }

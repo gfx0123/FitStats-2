@@ -29,7 +29,7 @@ struct TopInsightCard: View {
                 }
                 if hidden > 0 {
                     Text(moreText(hidden))
-                        .font(.caption2)
+                        .font(Font.fs(.caption2))
                         .foregroundStyle(Theme.tertiary)
                 }
             }
@@ -100,18 +100,18 @@ private struct TopInsightRow: View {
         HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(insight.title)
-                    .font(.subheadline.weight(.semibold))
+                    .font(Font.fs(.subheadline, .semibold))
                     .foregroundStyle(.white)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(insight.body)
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             if showsChevron {
                 Image(systemName: "chevron.right")
-                    .font(.caption2.weight(.semibold))
+                    .font(Font.fs(.caption2, .semibold))
                     .foregroundStyle(Theme.tertiary)
             }
         }

@@ -17,17 +17,21 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                accountSection
-                syncSection
-                deviceSection
-                liveSection
-                remindersSection
-                widgetsSection
-                preferencesSection
-                coachSection
-                dataSection
-                dangerSection
-                aboutSection
+                Group {
+                    accountSection
+                    syncSection
+                    deviceSection
+                    appearanceSection
+                    liveSection
+                    remindersSection
+                    widgetsSection
+                    preferencesSection
+                    coachSection
+                    dataSection
+                    dangerSection
+                    aboutSection
+                }
+                .listRowBackground(GlassRow())
             }
             .screenBackground()
             .navigationTitle("Settings")
@@ -59,7 +63,7 @@ struct SettingsView: View {
     // MARK: sections
 
     @ViewBuilder private var coachSection: some View {
-        Section("Coach") {
+        Section {
             NavigationLink {
                 CoachPickerView()
             } label: {
@@ -67,7 +71,7 @@ struct SettingsView: View {
                     CoachCharacter(persona: coach.persona, size: 40, animated: false)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Your coach: \(coach.persona.name)")
-                        Text(coach.persona.tagline).font(.caption).foregroundStyle(coach.persona.color)
+                        Text(coach.persona.tagline).font(Font.fs(.caption)).foregroundStyle(coach.persona.color)
                     }
                 }
             }
@@ -83,18 +87,21 @@ struct SettingsView: View {
                     Task { await coach.setModel(new) }
                 }
                 if let note = status.models.first(where: { $0.id == coachModel })?.note {
-                    Text(note).font(.caption).foregroundStyle(Theme.tertiary)
+                    Text(note).font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
                 }
                 if let u = status.usage {
                     KeyValueRow(key: "This month", value: "\(u.requests) API calls · \(costText(u.costUsd))")
                     KeyValueRow(key: "Tokens", value: "\(Format.number(Double(u.input + u.cacheRead + u.cacheWrite))) in · \(Format.number(Double(u.output))) out")
                 }
                 Text("Cost is estimated from Anthropic's list prices; the Anthropic Console shows your actual bill. The coach answers at most \(status.dailyLimit ?? 100) messages a day.")
-                    .font(.caption)
+                    .font(Font.fs(.caption))
                     .foregroundStyle(Theme.tertiary)
             } else {
                 Text("Loading…").foregroundStyle(Theme.secondary)
             }
+        }
+        } header: {
+            SettingsHeader("Coach", icon: "sparkles", color: Theme.sleep)
         }
         .onAppear { coachModel = coach.status?.model ?? "" }
     }
@@ -105,20 +112,22 @@ struct SettingsView: View {
     }
 
     private var accountSection: some View {
-        Section("Google Health") {
+        Section {
             KeyValueRow(key: "Account", value: model.status?.connection.email ?? "–")
             KeyValueRow(key: "Status", value: connectionText, color: connectionColor)
             if let missing = model.status?.connection.missingScopes, !missing.isEmpty {
                 Text("Missing permissions: \(missing.joined(separator: ", "))")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.recoveryYellow)
             }
             if let error = model.status?.connection.error, model.needsReconnect {
-                Text(error).font(.caption).foregroundStyle(Theme.tertiary)
+                Text(error).font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
             }
             Button(model.needsReconnect ? "Reconnect Google" : "Re-authorise Google") {
                 Task { await model.connect() }
             }
+        } header: {
+            SettingsHeader("Google Health", icon: "heart.text.square.fill", color: Theme.heart)
         }
     }
 
@@ -137,7 +146,7 @@ struct SettingsView: View {
     }
 
     private var syncSection: some View {
-        Section("Sync") {
+        Section {
             KeyValueRow(key: "Updated from Google", value: Format.relative(model.status?.sync.lastRecentSyncAt))
             KeyValueRow(key: "Last run", value: "\(Format.relative(model.status?.sync.lastRunAt)) · \(model.status?.sync.lastRunStatus ?? "–")")
             if let sync = model.status?.sync {
@@ -147,10 +156,10 @@ struct SettingsView: View {
                         Spacer()
                         Text(sync.backfillDone ? "Complete" : "\(Int(((sync.backfillProgress ?? 0) * 100).rounded()))%")
                     }
-                    .font(.subheadline)
+                    .font(Font.fs(.subheadline))
                     ProgressView(value: sync.backfillDone ? 1 : (sync.backfillProgress ?? 0)).tint(Theme.strain)
                     if let oldest = sync.backfillOldest {
-                        Text("Imported back to \(Format.shortDay(oldest))").font(.caption).foregroundStyle(Theme.tertiary)
+                        Text("Imported back to \(Format.shortDay(oldest))").font(Font.fs(.caption)).foregroundStyle(Theme.tertiary)
                     }
                 }
             }
@@ -158,23 +167,25 @@ struct SettingsView: View {
                 Task { await model.syncNow() }
             } label: {
                 HStack {
-                    Text(model.isSyncing ? "Syncing…" : "Sync now")
+                    Label(model.isSyncing ? "Syncing…" : "Sync now", systemImage: "arrow.triangle.2.circlepath")
                     if model.isSyncing { Spacer(); ProgressView() }
                 }
             }
             .disabled(model.isSyncing)
             Text("The server checks Google for new data every 5 minutes, even when this app is closed, and again whenever you open it or pull to refresh. Your band's data only reaches Google after the band syncs with the Google Health app on your phone.")
-                .font(.caption)
+                .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
+        } header: {
+            SettingsHeader("Sync", icon: "arrow.triangle.2.circlepath", color: Theme.recoveryGreen)
         }
     }
 
     @ViewBuilder private var deviceSection: some View {
         if let devices = model.status?.devices, !devices.isEmpty {
-            Section("Devices") {
+            Section {
                 ForEach(devices) { d in
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(d.name ?? "Fitbit device").font(.subheadline.weight(.semibold))
+                        Text(d.name ?? "Fitbit device").font(Font.fs(.subheadline, .semibold))
                         HStack(spacing: 12) {
                             if let level = d.batteryLevel {
                                 Label("\(level)%", systemImage: batteryIcon(level))
@@ -183,11 +194,30 @@ struct SettingsView: View {
                             }
                             Text("Synced \(Format.relative(d.lastSyncTime))")
                         }
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
                     }
                 }
+            } header: {
+                SettingsHeader("Devices", icon: "applewatch", color: Theme.stress)
             }
+        }
+    }
+
+    @AppStorage(AppBackground.natureKey) private var natureBackground = true
+
+    private var appearanceSection: some View {
+        Section {
+            Toggle(isOn: $natureBackground) {
+                Label("Nature background", systemImage: "mountain.2.fill")
+            }
+            .accessibilityIdentifier("settings-nature")
+        } header: {
+            SettingsHeader("Appearance", icon: "paintpalette.fill", color: Theme.body)
+        } footer: {
+            Text(natureBackground
+                 ? "A calm, slowly moving landscape whose sky follows the time of day. It stands still when Reduce Motion is on."
+                 : "Off: a plain grey background.")
         }
     }
 
@@ -212,7 +242,7 @@ struct SettingsView: View {
                     .onChange(of: journalTime) { _, _ in Task { await Reminders.update(model) } }
             }
         } header: {
-            Text("Reminders")
+            SettingsHeader("Reminders", icon: "bell.fill", color: Theme.recoveryYellow)
         } footer: {
             Text("The bedtime reminder comes before tonight's In bed by time from the Tonight plan. It is set again each time FitStats refreshes; for nights after that it uses an estimate until you open the app. The weekly summary is written by your server on Sunday evening; the reminder opens it. The journal reminder skips days you've already logged.")
         }
@@ -232,7 +262,7 @@ struct SettingsView: View {
         Section {
             Toggle("Live heart rate", isOn: $live.enabled)
         } header: {
-            Text("Live heart rate")
+            SettingsHeader("Live heart rate", icon: "waveform.path.ecg", color: Theme.heart)
         } footer: {
             Text(live.enabled
                  ? "FitStats connects to your Fitbit Air over Bluetooth while the live card or screen is open. Your band buzzes when FitStats connects and when it lets go, such as when you open or close the app."
@@ -258,6 +288,8 @@ struct SettingsView: View {
                 Label("Home Screen widgets", systemImage: "square.grid.2x2.fill")
             }
             .accessibilityIdentifier("settings-widgets")
+        } header: {
+            SettingsHeader("Widgets", icon: "square.grid.2x2.fill", color: Theme.strain)
         }
     }
 
@@ -275,7 +307,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Wake-up times")
                     Text(WakeTimesView.summary(model.wakeTimes) ?? "Not set: the times you usually wake up")
-                        .font(.caption)
+                        .font(Font.fs(.caption))
                         .foregroundStyle(Theme.secondary)
                 }
             }
@@ -308,7 +340,7 @@ struct SettingsView: View {
             }
             .disabled(saving || model.status == nil)
         } header: {
-            Text("Preferences")
+            SettingsHeader("Preferences", icon: "slider.horizontal.3", color: Theme.strain)
         } footer: {
             Text(maxHrText)
         }
@@ -329,14 +361,16 @@ struct SettingsView: View {
     }
 
     private var dataSection: some View {
-        Section("Data") {
-            NavigationLink("How the scores work") { ScoreInfoView() }
-            Button("Prepare CSV export") { exportURL = model.csvExport() }
+        Section {
+            NavigationLink { ScoreInfoView() } label: { Label("How the scores work", systemImage: "function") }
+            Button { exportURL = model.csvExport() } label: { Label("Prepare CSV export", systemImage: "tablecells") }
             if let exportURL {
                 ShareLink(item: exportURL) {
                     Label("Share \(exportURL.lastPathComponent)", systemImage: "square.and.arrow.up")
                 }
             }
+        } header: {
+            SettingsHeader("Data", icon: "externaldrive.fill", color: Theme.stageRem)
         }
     }
 
@@ -348,10 +382,12 @@ struct SettingsView: View {
     }
 
     private var aboutSection: some View {
-        Section("About") {
+        Section {
             KeyValueRow(key: "App", value: appVersion)
             KeyValueRow(key: "Server", value: model.status?.version ?? "–")
-            Text(model.baseURL.absoluteString).font(.caption2).foregroundStyle(Theme.tertiary)
+            Text(model.baseURL.absoluteString).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
+        } header: {
+            SettingsHeader("About", icon: "info.circle.fill", color: Theme.secondary)
         }
     }
 
@@ -359,6 +395,37 @@ struct SettingsView: View {
         let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
         let b = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
         return "\(v) (\(b))"
+    }
+}
+
+/// A Settings section title with its icon in a small coloured tile.
+struct SettingsHeader: View {
+    let title: String
+    let icon: String
+    let color: Color
+
+    init(_ title: String, icon: String, color: Color) {
+        self.title = title
+        self.icon = icon
+        self.color = color
+    }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(Font.fredoka(11, weight: .semibold))
+                .foregroundStyle(color)
+                .frame(width: 22, height: 22)
+                .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(color.opacity(0.2)))
+            Text(title)
+        }
+    }
+}
+
+/// A list row's background: frosted glass like the cards.
+struct GlassRow: View {
+    var body: some View {
+        Rectangle().fill(.ultraThinMaterial).overlay(Rectangle().fill(Theme.card))
     }
 }
 
@@ -439,7 +506,7 @@ struct ScoreInfoView: View {
                 heart rate, its strain and zones cover only those minutes and are marked partial.
                 """)
                 Text("These are FitStats' own transparent formulas. They are not Bevel's or Fitbit's scores (both are proprietary), and they are not medical advice.")
-                    .font(.footnote)
+                    .font(Font.fs(.footnote))
                     .foregroundStyle(Theme.tertiary)
             }
             .padding(16)
@@ -453,9 +520,9 @@ struct ScoreInfoView: View {
         Card {
             HStack(spacing: 8) {
                 Circle().fill(color).frame(width: 10, height: 10)
-                Text(title).font(.headline)
+                Text(title).font(Font.fs(.headline))
             }
-            Text(text).font(.footnote).foregroundStyle(Theme.secondary)
+            Text(text).font(Font.fs(.footnote)).foregroundStyle(Theme.secondary)
         }
     }
 }

@@ -22,7 +22,7 @@ struct WorkoutLogDetailView: View {
                     if let notes = log.notes, !notes.isEmpty {
                         Card {
                             SectionHeader(title: "Notes")
-                            Text(notes).font(.subheadline).fixedSize(horizontal: false, vertical: true)
+                            Text(notes).font(Font.fs(.subheadline)).fixedSize(horizontal: false, vertical: true)
                         }
                     }
                     AskCoachRow(prompts: [
@@ -67,11 +67,11 @@ struct WorkoutLogDetailView: View {
     private func header(_ log: WorkoutLog) -> some View {
         Card {
             HStack(alignment: .firstTextBaseline) {
-                Text(log.name).font(.title3.weight(.semibold))
+                Text(log.name).font(Font.fs(.title3, .semibold))
                 Spacer()
                 if let effort = log.effort {
                     Text("Effort \(effort)/10")
-                        .font(.caption.weight(.semibold))
+                        .font(Font.fs(.caption, .semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(Capsule().fill(Effort.color(effort).opacity(0.18)))
@@ -79,12 +79,12 @@ struct WorkoutLogDetailView: View {
                 }
             }
             Text([Format.longDay(log.date), timeRange(log)].compactMap { $0 }.joined(separator: " · "))
-                .font(.footnote)
+                .font(Font.fs(.footnote))
                 .foregroundStyle(Theme.secondary)
             if let id = log.routineId, let routine = model.routines.first(where: { $0.id == id }) {
                 NavigationLink(value: TrainingRoute.routine(id)) {
                     Label("From \(routine.name)", systemImage: "list.bullet.clipboard")
-                        .font(.footnote.weight(.semibold))
+                        .font(Font.fs(.footnote, .semibold))
                 }
             }
         }
@@ -100,22 +100,22 @@ struct WorkoutLogDetailView: View {
 
     private func tile(_ title: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(.caption).foregroundStyle(Theme.secondary)
-            Text(value).font(Theme.number(20)).lineLimit(1).minimumScaleFactor(0.7)
+            Text(title).font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
+            Text(value).font(Font.fredoka(20)).lineLimit(1).minimumScaleFactor(0.7)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.card))
+        .background(Glass(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Theme.cardBorder, lineWidth: 1))
     }
 
     private func exerciseCard(_ e: LoggedExercise) -> some View {
         Card {
             HStack(alignment: .firstTextBaseline) {
-                Label(e.name, systemImage: e.kind.icon).font(.headline)
+                Label(e.name, systemImage: e.kind.icon).font(Font.fs(.headline))
                 Spacer()
                 if let v = e.volumeKg {
-                    Text("\(Format.number(v)) kg").font(.caption).foregroundStyle(Theme.secondary)
+                    Text("\(Format.number(v)) kg").font(Font.fs(.caption)).foregroundStyle(Theme.secondary)
                 }
             }
             ForEach(Array(e.sets.enumerated()), id: \.element.id) { item in
@@ -126,12 +126,12 @@ struct WorkoutLogDetailView: View {
                     Image(systemName: item.element.done ? "checkmark.circle.fill" : "minus.circle")
                         .foregroundStyle(item.element.done ? Theme.recoveryGreen : Theme.tertiary)
                 }
-                .font(.subheadline)
+                .font(Font.fs(.subheadline))
                 .opacity(item.element.done ? 1 : 0.55)
                 .accessibilityElement(children: .combine)
             }
             if let notes = e.notes, !notes.isEmpty {
-                Text(notes).font(.caption).foregroundStyle(Theme.secondary).italic()
+                Text(notes).font(Font.fs(.caption)).foregroundStyle(Theme.secondary).italic()
             }
         }
     }
@@ -144,7 +144,7 @@ struct WorkoutLogDetailView: View {
                 HStack {
                     SectionHeader(title: "Recorded by your band", subtitle: x.displayName)
                     Spacer()
-                    Image(systemName: "chevron.right").font(.caption2.weight(.semibold)).foregroundStyle(Theme.tertiary)
+                    Image(systemName: "chevron.right").font(Font.fs(.caption2, .semibold)).foregroundStyle(Theme.tertiary)
                 }
                 let raw: [(String, String?)] = [
                     ("Avg heart rate", x.avgHr.map { "\(Int($0.rounded())) bpm" }),
@@ -159,8 +159,8 @@ struct WorkoutLogDetailView: View {
                           alignment: .leading, spacing: 10) {
                     ForEach(stats, id: \.0) { stat in
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(stat.1).font(.subheadline.weight(.semibold)).monospacedDigit()
-                            Text(stat.0).font(.caption2).foregroundStyle(Theme.tertiary)
+                            Text(stat.1).font(Font.fs(.subheadline, .semibold)).monospacedDigit()
+                            Text(stat.0).font(Font.fs(.caption2)).foregroundStyle(Theme.tertiary)
                         }
                     }
                 }
@@ -192,7 +192,7 @@ struct WorkoutLogDetailView: View {
                     ForEach(zones.filter { $0.1 > 0 }, id: \.0) { z in
                         HStack(spacing: 4) {
                             Circle().fill(z.2).frame(width: 6, height: 6)
-                            Text("\(z.0) \(Format.duration(z.1 / 60))").font(.caption2).foregroundStyle(Theme.secondary)
+                            Text("\(z.0) \(Format.duration(z.1 / 60))").font(Font.fs(.caption2)).foregroundStyle(Theme.secondary)
                         }
                     }
                 }

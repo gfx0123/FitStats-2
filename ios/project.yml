@@ -41,6 +41,13 @@ targets:
             CFBundleURLSchemes:
               - fitstats
         FitStatsServerURL: https://zkxnbcrayjwkeyxlungk.supabase.co/functions/v1/fitstats
+        # Fredoka (SIL Open Font License, Resources/Fonts/OFL.txt): the app's rounded font.
+        UIAppFonts:
+          - Fredoka-Light.ttf
+          - Fredoka-Regular.ttf
+          - Fredoka-Medium.ttf
+          - Fredoka-SemiBold.ttf
+          - Fredoka-Bold.ttf
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.fitstats.air.k29x
