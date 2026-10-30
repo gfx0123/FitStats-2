@@ -18,9 +18,9 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 Group {
+                    deviceSection
                     accountSection
                     syncSection
-                    deviceSection
                     appearanceSection
                     liveSection
                     remindersSection
@@ -183,19 +183,28 @@ struct SettingsView: View {
         if let devices = model.status?.devices, !devices.isEmpty {
             Section {
                 ForEach(devices) { d in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(d.name ?? "Fitbit device").font(Font.fs(.subheadline, .semibold))
-                        HStack(spacing: 12) {
-                            if let level = d.batteryLevel {
-                                Label("\(level)%", systemImage: batteryIcon(level))
-                            } else if let status = d.batteryStatus {
-                                Label(status, systemImage: "battery.50")
+                    HStack(spacing: 14) {
+                        Image(systemName: "applewatch.side.right")
+                            .font(Font.fredoka(24, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 52, height: 52)
+                            .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(LinearGradient(colors: [Theme.recoveryGreen, Theme.stress.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing)))
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(d.name ?? "Fitbit device").font(Font.fs(.headline))
+                            HStack(spacing: 10) {
+                                if let level = d.batteryLevel {
+                                    Label("\(level)%", systemImage: batteryIcon(level))
+                                } else if let status = d.batteryStatus {
+                                    Label(status, systemImage: "battery.50")
+                                }
+                                Text("Synced \(Format.relative(d.lastSyncTime))")
                             }
-                            Text("Synced \(Format.relative(d.lastSyncTime))")
+                            .font(Font.fs(.caption))
+                            .foregroundStyle(Theme.secondary)
                         }
-                        .font(Font.fs(.caption))
-                        .foregroundStyle(Theme.secondary)
                     }
+                    .padding(.vertical, 4)
                 }
             } header: {
                 SettingsHeader("Devices", icon: "applewatch", color: Theme.stress)

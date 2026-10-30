@@ -175,36 +175,68 @@ struct TrainingView: View {
 
     @ViewBuilder private var routinesSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Routines", subtitle: model.routines.isEmpty ? nil : "Tap one to see it or start it, hold it to move it")
+            SectionHeader(title: "Routines", subtitle: model.routines.isEmpty ? nil : "Swipe through them; tap one to see it, hold it to move it")
             if model.routines.isEmpty {
                 Card {
                     EmptyStateView(icon: "list.bullet.clipboard", title: "No routines yet",
                                    message: "Make one with the + button, or ask the coach to make one for you.")
                 }
             }
-            ForEach(Array(model.routines.enumerated()), id: \.element.id) { item in
-                let routine = item.element
-                NavigationLink(value: TrainingRoute.routine(routine.id)) {
-                    RoutineCard(routine: routine, lastDone: model.workoutLogs.first { $0.routineId == routine.id }?.date)
-                }
-                .buttonStyle(.plain)
-                .contextMenu {
-                    if item.offset > 0 {
-                        Button("Move up", systemImage: "arrow.up") {
-                            Task { await model.moveRoutines(from: IndexSet(integer: item.offset), to: item.offset - 1) }
-                        }
+            // Side by side, swiped through, each with its own Start button.
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(Array(model.routines.enumerated()), id: \.element.id) { item in
+                        routineTile(item.element, index: item.offset)
                     }
-                    if item.offset < model.routines.count - 1 {
-                        Button("Move down", systemImage: "arrow.down") {
-                            Task { await model.moveRoutines(from: IndexSet(integer: item.offset), to: item.offset + 2) }
-                        }
-                    }
-                    Button("Edit", systemImage: "pencil") { editingRoutine = routine }
                 }
-                .accessibilityIdentifier("routine-\(routine.name)")
+                // Every tile as tall as the tallest.
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 16)
             }
+            .padding(.horizontal, -16)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func routineTile(_ routine: Routine, index: Int) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            NavigationLink(value: TrainingRoute.routine(routine.id)) {
+                RoutineCard(routine: routine, lastDone: model.workoutLogs.first { $0.routineId == routine.id }?.date, bare: true)
+            }
+            .buttonStyle(.plain)
+            .contextMenu {
+                if index > 0 {
+                    Button("Move up", systemImage: "arrow.up") {
+                        Task { await model.moveRoutines(from: IndexSet(integer: index), to: index - 1) }
+                    }
+                }
+                if index < model.routines.count - 1 {
+                    Button("Move down", systemImage: "arrow.down") {
+                        Task { await model.moveRoutines(from: IndexSet(integer: index), to: index + 2) }
+                    }
+                }
+                Button("Edit", systemImage: "pencil") { editingRoutine = routine }
+            }
+            .accessibilityIdentifier("routine-\(routine.name)")
+            Button {
+                workout.start(WorkoutLog.start(from: routine, date: model.today, previous: model.workoutLogs))
+            } label: {
+                Label("Start", systemImage: "play.fill")
+                    .font(Font.fs(.subheadline, .semibold))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Capsule().fill(Theme.recoveryGreen))
+                    .foregroundStyle(.black)
+            }
+            .buttonStyle(.plain)
+            .disabled(routine.exercises.isEmpty || workout.log != nil)
+            .accessibilityIdentifier("routine-quick-start-\(routine.name)")
+        }
+        .padding(16)
+        .frame(width: 236, alignment: .topLeading)
+        .frame(maxHeight: .infinity, alignment: .topLeading)
+        .background(Glass(cornerRadius: 22))
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Theme.cardBorder, lineWidth: 1))
     }
 
     /// What you logged here and what the band recorded, newest first.
@@ -388,10 +420,12 @@ struct HistoryRow: View {
 struct RoutineCard: View {
     let routine: Routine
     let lastDone: String?
+    /// Inside a tile that draws its own card.
+    var bare = false
     @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        Card {
+        Card(padding: bare ? 0 : 16) {
             HStack(alignment: .firstTextBaseline) {
                 Text(routine.name).font(Font.fs(.headline)).foregroundStyle(.white).lineLimit(1)
                 if routine.byCoach { CoachBadge() }
@@ -406,6 +440,7 @@ struct RoutineCard: View {
                 .font(Font.fs(.caption))
                 .foregroundStyle(Theme.tertiary)
         }
+        .environment(\.homeCardBare, bare)
     }
 }
 

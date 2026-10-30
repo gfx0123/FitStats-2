@@ -91,6 +91,7 @@ struct TodayView: View {
                         if editing {
                             editHeader
                         } else {
+                            greeting
                             WeekStrip(today: model.today, selected: $selected) { model.daysByDate[$0]?.double("recovery") }
                             syncLine
                             banners
@@ -161,6 +162,7 @@ struct TodayView: View {
                                          onChange: update, onRemove: { remove(item.id) },
                                          onExtract: { entry in extract(entry, from: item.id) })
                         .environmentObject(model)
+                        .environmentObject(model.coach)
                 }
                 .sheet(isPresented: $editingTimes) {
                     HomeTimesSheet(config: configBinding)
@@ -416,6 +418,7 @@ struct TodayView: View {
     /// The question a card's coach tab sends, for the cards it is worth asking about; nil for
     /// the others.
     private func coachQuestion(_ item: HomeItem) -> String? {
+        guard item.options.askCoach ?? true else { return nil }
         let today = date == model.today
         let day = today ? "today" : "on \(Format.longDay(date))"
         switch item.card {
@@ -797,6 +800,25 @@ struct TodayView: View {
 
     /// Lives in the navigation bar, so scrolled content passes under a blurred bar instead of the
     /// status bar. While editing it holds Add and Done instead of the day controls.
+    /// "Good morning" (or "Yesterday", "Tuesday") over the date as the page's big title.
+    private var greeting: some View {
+        let hour = Calendar.current.component(.hour, from: now)
+        let hello = hour >= 5 && hour < 12 ? "Good morning" : hour >= 12 && hour < 17 ? "Good afternoon" : hour >= 17 && hour < 22 ? "Good evening" : "Good night"
+        let big = Format.date(date)?.formatted(Date.FormatStyle(timeZone: Format.utc).weekday(.wide).month(.abbreviated).day()) ?? Format.longDay(date)
+        return VStack(alignment: .leading, spacing: 0) {
+            Text(date == model.today ? hello : Format.prettyDay(date, today: model.today))
+                .font(Font.fs(.subheadline, .medium))
+                .foregroundStyle(.white.opacity(0.75))
+            Text(big)
+                .font(Font.fs(.largeTitle, .semibold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 4)
+    }
+
     @ToolbarContentBuilder private func header(_ proxy: ScrollViewProxy) -> some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             if editing {
@@ -822,14 +844,8 @@ struct TodayView: View {
             }
         }
         ToolbarItem(placement: .principal) {
-            if editing {
-                Text("Edit Home").font(Font.fs(.headline))
-            } else {
-                VStack(spacing: 0) {
-                    Text(Format.prettyDay(date, today: model.today)).font(Font.fs(.headline))
-                    Text(Format.longDay(date)).font(Font.fs(.caption2)).foregroundStyle(Theme.secondary)
-                }
-            }
+            // The day is the big title at the top of the page (greeting).
+            if editing { Text("Edit Home").font(Font.fs(.headline)) }
         }
         ToolbarItem(placement: .topBarTrailing) {
             if !editing && live.enabled {
@@ -1052,7 +1068,7 @@ struct HomeLargeCard: View {
         let caption = recovery != nil
             ? Theme.recoveryLabel(recovery)
             : (breakdown.status == "calibrating" ? "Calibrating" : "No data")
-        return Card {
+        return VStack(spacing: 12) {
             NavigationLink(value: DetailRoute.recovery(date)) {
                 VStack(spacing: 12) {
                     // Recovery as one big number, like Body age.
@@ -1082,26 +1098,31 @@ struct HomeLargeCard: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("ring-recovery")
-            Divider().overlay(Theme.track)
-            HStack(alignment: .top) {
+            .padding(.horizontal, 4)
+            // Strain, Sleep and Stress as three small cards under the big number.
+            HStack(alignment: .top, spacing: 10) {
                 smallRing(.strain(date), "Strain", day.double("strain"), Theme.strain, Theme.strainEnd,
                           strainTarget(day).map { "Goal \(Int($0.lowerBound))–\(Int($0.upperBound))" },
                           target: strainTarget(day))
-                Spacer(minLength: 4)
                 smallRing(.sleep(date), "Sleep", day.double("sleep_score"), Theme.sleep, nil,
                           Format.duration(day.double("sleep_asleep_min")))
-                Spacer(minLength: 4)
                 smallRing(.stress(date), "Stress", day.double("stress"), Theme.stressColor(day.double("stress")), nil,
                           Theme.stressLabel(day.double("stress")))
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
     private func smallRing(_ route: DetailRoute, _ title: String, _ value: Double?, _ color: Color, _ end: Color?,
                            _ caption: String?, target: ClosedRange<Double>? = nil) -> some View {
         NavigationLink(value: route) {
             ScoreRing(title: title, value: value, maxValue: 100, color: color, endColor: end,
-                      caption: caption, size: 88, lineWidth: 9, target: target)
+                      caption: caption, size: 78, lineWidth: 8, target: target)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 4)
+                .background(Glass(cornerRadius: 22))
+                .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Theme.cardBorder, lineWidth: 1))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("ring-\(title.lowercased())")

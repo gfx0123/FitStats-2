@@ -80,7 +80,13 @@ struct CoachView: View {
                     HStack(spacing: 6) {
                         CoachCharacter(persona: coach.persona, size: 26, thinking: coach.isSending && coach.streamingText.isEmpty,
                                        talking: coach.isSending && !coach.streamingText.isEmpty)
-                        Text(coach.persona.name).font(Font.fs(.headline)).foregroundStyle(.white)
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(coach.persona.name).font(Font.fs(.headline)).foregroundStyle(.white)
+                            Text(coach.persona.tagline.uppercased())
+                                .font(Font.fs(.caption2, .semibold))
+                                .tracking(1.4)
+                                .foregroundStyle(coach.persona.color)
+                        }
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("coach-name-bar")
@@ -315,9 +321,10 @@ struct CoachView: View {
                 TextField(coach.isConfigured ? "Ask \(coach.persona.name)…" : "Coach isn't set up yet", text: $input, axis: .vertical)
                     .lineLimit(1...5)
                     .focused($inputFocused)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Color.white.opacity(0.08)))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 11)
+                    .background(Glass(cornerRadius: 22))
+                    .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Theme.cardBorder, lineWidth: 1))
                     .disabled(!coach.isConfigured)
                     .accessibilityIdentifier("coach-input")
                 Button {
@@ -327,9 +334,11 @@ struct CoachView: View {
                     files = []
                     fileProblem = nil
                 } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(Font.fredoka(34, weight: .regular))
-                        .foregroundStyle(canSend ? coach.persona.color : Color.white.opacity(0.2))
+                    Image(systemName: "arrow.up")
+                        .font(Font.fredoka(18, weight: .bold))
+                        .foregroundStyle(canSend ? Color.black.opacity(0.8) : Color.white.opacity(0.35))
+                        .frame(width: 42, height: 42)
+                        .background(Circle().fill(canSend ? coach.persona.color : Color.white.opacity(0.12)))
                 }
                 .disabled(!canSend)
                 .accessibilityLabel("Send")
@@ -339,7 +348,7 @@ struct CoachView: View {
         .padding(.horizontal, 16)
         .padding(.top, 8)
         .padding(.bottom, 8)
-        .background(.bar)
+        .background(.ultraThinMaterial.opacity(0.6))
         .fileImporter(isPresented: $pickingFiles, allowedContentTypes: [.commaSeparatedText, .tabSeparatedText, .plainText, .text],
                       allowsMultipleSelection: true) { result in
             takeFiles(result)

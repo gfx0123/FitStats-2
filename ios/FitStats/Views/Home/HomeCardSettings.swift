@@ -10,6 +10,7 @@ struct HomeCardSettingsView: View {
     /// A Smart Stack's card back onto Home on its own.
     var onExtract: (StackEntry) -> Void = { _ in }
     @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var coach: CoachStore
     @Environment(\.dismiss) private var dismiss
 
     private static let dayChoices = [7, 14, 30, 90]
@@ -27,6 +28,16 @@ struct HomeCardSettingsView: View {
                     .accessibilityIdentifier("card-settings-size")
                 }
                 cardSections
+                if draft.card.hasCoachTab {
+                    Section {
+                        Toggle(isOn: Binding(get: { draft.options.askCoach ?? true }, set: { draft.options.askCoach = $0 })) {
+                            Label("Ask \(coach.persona.name) button", systemImage: "sparkles")
+                        }
+                        .accessibilityIdentifier("card-settings-ask")
+                    } footer: {
+                        Text("A tab under the card that asks your coach about it.")
+                    }
+                }
                 if canRemove {
                     Section {
                         Button("Remove from Home", role: .destructive) {

@@ -31,6 +31,11 @@ enum HomeCard: String, CaseIterable, Identifiable, Codable {
 
     var id: String { rawValue }
 
+    /// The cards that can have an "Ask" coach tab under them (TodayView.coachQuestion).
+    var hasCoachTab: Bool {
+        [.scores, .tonight, .lastNight, .stressDay, .workouts, .trainingLoad].contains(self)
+    }
+
     /// The name in the Home editor: the same as the header the card shows (Scores has none).
     var title: String {
         switch self {
@@ -194,6 +199,8 @@ struct CardOptions: Codable, Hashable {
     var stack: [StackEntry]?
     /// Smart Stack: open on the card that fits the time of day.
     var rotate: Bool?
+    /// The coach tab under the card (HomeCard.hasCoachTab); nil means shown.
+    var askCoach: Bool?
 }
 
 /// A card inside a Smart Stack.
