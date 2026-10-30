@@ -56,6 +56,8 @@ final class AppModel: ObservableObject {
     @Published var weeklyRequest = false
     /// A tapped Home Screen widget: the tab it opens ("today", "coach"…).
     @Published var tabRequest: String?
+    /// Trends (with Insights), opened as a sheet from Today.
+    @Published var showTrends = false
     /// Redraws the widgets when a new brief from the coach arrives.
     private var briefWatch: AnyCancellable?
 
@@ -69,9 +71,14 @@ final class AppModel: ObservableObject {
             self?.signOutLocally()
             self?.connectMessage = "This app key is no longer valid. Connect Google again."
         }
-        // The coach saved a routine: the Training tab shows it.
-        coach.onTrainingChanged = { [weak self] in
-            Task { await self?.refreshTraining() }
+        // The coach changed something: reload that part (settings and the journal come with
+        // the rest of the data, and change the scores and statistics).
+        coach.onDataChanged = { [weak self] what in
+            Task {
+                guard let self else { return }
+                if what == "training" || what == "all" { await self.refreshTraining() }
+                if what != "training" { await self.refreshAll(force: true) }
+            }
         }
         if let fixtureDir {
             appKey = "fixture"

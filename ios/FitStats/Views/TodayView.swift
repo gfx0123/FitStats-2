@@ -118,6 +118,7 @@ struct TodayView: View {
                                 ? [("sparkles", "Explain today", "About today: what stands out so far, and why?"),
                                    ("figure.run", "What should I do today?", "What should I do today, given my recovery, sleep and training?")]
                                 : [("sparkles", "Explain this day", "About my day on \(Format.longDay(date)): what stands out, and why?")])
+                            trendsButton
                             editHomeButton
                             footer
                         }
@@ -154,6 +155,7 @@ struct TodayView: View {
                 .onDaySwipe(enabled: !editing) { daySwipe($0) }
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { header(proxy) }
+                .fullScreenCover(isPresented: $model.showTrends) { TrendsSheet() }
                 .sheet(item: $settingsItem) { item in
                     HomeCardSettingsView(draft: item, canRemove: items.count > 1,
                                          onChange: update, onRemove: { remove(item.id) },
@@ -771,6 +773,26 @@ struct TodayView: View {
         .padding(.top, 4)
     }
 
+    /// Trends and Insights used to be a tab; they open from here now.
+    private var trendsButton: some View {
+        Button { model.showTrends = true } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "chart.xyaxis.line").foregroundStyle(Theme.recoveryGreen)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Trends & Insights").font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+                    Text("Every metric over time, the calendar, comparisons").font(.caption).foregroundStyle(Theme.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(Theme.tertiary)
+            }
+            .padding(14)
+            .background(RoundedRectangle(cornerRadius: 16).fill(Theme.card))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.cardBorder))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today-trends-row")
+    }
+
     // MARK: header & banners
 
     /// Lives in the navigation bar, so scrolled content passes under a blurred bar instead of the
@@ -786,10 +808,17 @@ struct TodayView: View {
                 .accessibilityLabel("Add a card")
                 .accessibilityIdentifier("home-add-cards")
             } else {
-                Button { shift(-1) } label: {
-                    Image(systemName: "chevron.left").foregroundStyle(.white)
+                HStack(spacing: 14) {
+                    Button { shift(-1) } label: {
+                        Image(systemName: "chevron.left").foregroundStyle(.white)
+                    }
+                    .accessibilityLabel("Previous day")
+                    Button { model.showTrends = true } label: {
+                        Image(systemName: "chart.xyaxis.line").foregroundStyle(Theme.recoveryGreen)
+                    }
+                    .accessibilityLabel("Trends")
+                    .accessibilityIdentifier("today-trends")
                 }
-                .accessibilityLabel("Previous day")
             }
         }
         ToolbarItem(placement: .principal) {

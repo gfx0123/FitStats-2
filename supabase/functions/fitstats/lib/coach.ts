@@ -5,7 +5,8 @@
 
 import * as db from "./db.ts";
 import { exerciseMuscles, LIBRARY, type MuscleId, MUSCLES } from "./exercises.ts";
-import { type JournalEntry, journalEntries, tagLabel } from "./journal.ts";
+import { JOURNAL_TAGS, type JournalEntry, journalEntries, JournalInputError, saveJournalEntry, tagLabel } from "./journal.ts";
+import { applySettings, SettingsInputError, settingsWithMaxHr } from "./settings.ts";
 import { type CsvFile, importSummary, importWorkoutCsv, parseFiles } from "./csvimport.ts";
 import { sleepPlan, usualWake, wakeTimesFrom, type WakeTimes } from "./planner.ts";
 import type { DayRow } from "./scores.ts";
@@ -19,6 +20,9 @@ import {
   logText,
   muscleSetsText,
   routineText,
+  deleteLog,
+  deleteRoutine,
+  saveLog,
   saveRoutine,
   pairBandWorkouts,
   TrainingInputError,
@@ -676,10 +680,165 @@ export const TOOLS: Json[] = [
       required: ["from", "to"],
     },
   },
+  {
+    name: "get_body_age",
+    description: "Their body age: the age whose typical person has their fitness, resting heart rate, steps, exercise and sleep, " +
+      "with each factor's value, the typical value for their age, its years (+ older, − younger) and the study it comes from, " +
+      "their estimated VO₂ max and how it was estimated, the monthly history, and what would change it. The Body age tab shows the same.",
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "get_settings",
+    description: "Their settings: sex, sleep need, step goal, max heart rate set by hand (null = automatic) and the max heart rate in use with its source, " +
+      "how many days of history to keep, and the wake-up times set by hand (Monday first, minutes from local midnight, null = free to sleep in).",
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "update_settings",
+    description: "Changes their settings, as Settings in the app does. Pass only what should change. Use it only when they ask for the change " +
+      "(or agree to one you suggested), and say what you changed. A new sex or max heart rate recomputes strain, stress and zones for their whole history; " +
+      "a new sleep need, step goal or history length recomputes the scores (it runs in the background and takes a minute). " +
+      "A longer history downloads the older days from Google.",
+    input_schema: {
+      type: "object",
+      properties: {
+        sex: { type: "string", enum: ["male", "female", "unspecified"] },
+        sleep_need_min: { type: "integer", minimum: 300, maximum: 720, description: "Minutes of sleep they need a night" },
+        step_goal: { type: "integer", minimum: 1000, maximum: 50000 },
+        max_hr_override: { type: ["integer", "null"], minimum: 120, maximum: 230, description: "Max heart rate set by hand; null to go back to automatic" },
+        backfill_days: { type: "integer", enum: [90, 180, 365, 730, 1095, 1825, 3650], description: "Days of history to keep" },
+        wake_times: {
+          type: ["array", "null"],
+          minItems: 7,
+          maxItems: 7,
+          items: { type: ["integer", "null"], minimum: 0, maximum: 1439 },
+          description: "Wake-up times Monday to Sunday in minutes from local midnight (390 = 6:30), null for a morning free to sleep in; null instead of the list clears them all. Always pass all 7.",
+        },
+      },
+    },
+  },
+  {
+    name: "save_journal_entry",
+    description: "Saves one day's journal entry (replacing what was there): its tags and note. Get the day's entry first (get_journal) and keep what they didn't ask to change. " +
+      `Built-in tags: ${JOURNAL_TAGS.map((t) => `${t.id} (${t.label})`).join(", ")}; any other short text is kept as a custom tag. An empty tag list means "nothing to note".`,
+    input_schema: {
+      type: "object",
+      properties: {
+        date: { type: "string", description: "YYYY-MM-DD, not in the future" },
+        tags: { type: "array", items: { type: "string" }, maxItems: 20 },
+        note: { type: "string", description: "Up to 500 characters" },
+      },
+      required: ["date", "tags"],
+    },
+  },
+  {
+    name: "save_workout_log",
+    description: "Adds a workout to their Training tab's history, or changes one (pass its id from get_training and the whole workout as it should be). " +
+      "Set by set: reps, kg, minutes, km, done. Use it when they tell you about a workout to log or ask you to fix one. Times are ISO 8601 with their offset.",
+    input_schema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "An existing logged workout's id, to change it" },
+        date: { type: "string", description: "YYYY-MM-DD, not in the future" },
+        name: { type: "string" },
+        started_at: { type: "string" },
+        ended_at: { type: "string" },
+        routine_id: { type: "string" },
+        effort: { type: "integer", minimum: 1, maximum: 10 },
+        notes: { type: "string" },
+        exercises: {
+          type: "array",
+          minItems: 1,
+          maxItems: 40,
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              kind: { type: "string", enum: [...EXERCISE_KINDS] },
+              notes: { type: "string" },
+              sets: {
+                type: "array",
+                maxItems: 50,
+                items: {
+                  type: "object",
+                  properties: {
+                    reps: { type: "integer" }, weight_kg: { type: "number" }, duration_min: { type: "number" }, distance_km: { type: "number" }, done: { type: "boolean" },
+                  },
+                },
+              },
+            },
+            required: ["name", "kind", "sets"],
+          },
+        },
+      },
+      required: ["date", "name", "exercises"],
+    },
+  },
+  {
+    name: "delete_item",
+    description: "Deletes one of their routines, logged workouts or journal days. Only after they said yes to deleting that exact item in this conversation: " +
+      "name it and ask first, then call this with confirmed: true. It goes to Recently deleted for 30 days (get_deleted, restore_deleted). " +
+      "The band's own recordings (sleep, workouts, heart rate) come from Google and can't be deleted here.",
+    input_schema: {
+      type: "object",
+      properties: {
+        kind: { type: "string", enum: ["routine", "workout_log", "journal"] },
+        id: { type: "string", description: "The routine's or logged workout's id, or the journal day (YYYY-MM-DD)" },
+        confirmed: { type: "boolean", description: "true only when they confirmed deleting it" },
+      },
+      required: ["kind", "id", "confirmed"],
+    },
+  },
+  {
+    name: "get_deleted",
+    description: "What you deleted for them in the last 30 days (Recently deleted), newest first, with the ids restore_deleted needs.",
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "restore_deleted",
+    description: "Puts back something from Recently deleted (get_deleted gives the id).",
+    input_schema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+  },
 ];
 
-/** Tools that change what the app shows: the app reloads its training data after them. */
-export const TRAINING_WRITES = new Set(["save_routine"]);
+/** What each tool that changes their data changes: the app reloads that part after it. */
+export const DATA_WRITES: Record<string, "training" | "journal" | "settings" | "all"> = {
+  save_routine: "training",
+  save_workout_log: "training",
+  update_settings: "settings",
+  save_journal_entry: "journal",
+  delete_item: "all",
+  restore_deleted: "all",
+};
+
+const TRASH_DAYS = 30;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Moves one routine, logged workout or journal day to Recently deleted. */
+async function deleteItem(kind: string, id: string): Promise<Json> {
+  const table = kind === "routine" ? "fs_routines" : kind === "workout_log" ? "fs_workout_logs" : kind === "journal" ? "fs_journal" : null;
+  if (!table) throw new ToolError("kind must be routine, workout_log or journal");
+  const key = kind === "journal" ? "date" : "id";
+  if (kind === "journal" ? !YMD.test(id) : !UUID_RE.test(id)) throw new ToolError(kind === "journal" ? "id must be the day, YYYY-MM-DD" : "id must be the item's id");
+  const row = await db.selectOne<Row>(table, `select=*&${key}=eq.${id}`);
+  if (!row) throw new ToolError(`no ${kind.replace("_", " ")} ${id}`);
+  const label = kind === "journal" ? `Journal ${id}` : `${String(row.name ?? kind)}${kind === "workout_log" ? ` (${row.date})` : ""}`;
+  await db.insert("fs_coach_trash", [{ id: crypto.randomUUID(), kind, item: row, label }]);
+  if (kind === "routine") await deleteRoutine(id);
+  else if (kind === "workout_log") await deleteLog(id);
+  else await db.remove("fs_journal", `date=eq.${id}`);
+  return { deleted: true, what: label, note: `It's in Recently deleted for ${TRASH_DAYS} days.` };
+}
+
+async function restoreItem(id: string): Promise<Json> {
+  if (!UUID_RE.test(id)) throw new ToolError("id must come from get_deleted");
+  const t = await db.selectOne<Row>("fs_coach_trash", `select=*&id=eq.${id}`);
+  if (!t) throw new ToolError("nothing in Recently deleted with that id");
+  const table = t.kind === "routine" ? "fs_routines" : t.kind === "workout_log" ? "fs_workout_logs" : "fs_journal";
+  await db.upsert(table, [t.item as Row], t.kind === "journal" ? "date" : "id");
+  await db.remove("fs_coach_trash", `id=eq.${id}`);
+  return { restored: true, what: t.label };
+}
 
 class ToolError extends Error {}
 
@@ -823,6 +982,57 @@ export async function runTool(name: string, input: Json, ctx: Ctx, stats: Json |
       const entries = await journalEntries(from, to);
       return { from, to, entries: entries.map((e) => ({ date: e.date, tags: e.tags.map(tagLabel), note: e.note })) };
     }
+    case "get_body_age": {
+      const b = (stats as Json | null)?.body_age;
+      return b ?? { note: "No body age yet: it needs about two weeks of the band's data, and their age from Google." };
+    }
+    case "get_settings": {
+      const { settings, max_hr } = await settingsWithMaxHr();
+      const { coach_model: _model, updated_at: _u, ...rest } = settings as unknown as Row;
+      return { ...rest, max_hr_in_use: max_hr, wake_times_note: "Monday first, minutes from local midnight; null = free to sleep in" };
+    }
+    case "update_settings": {
+      try {
+        const { settings, max_hr } = await applySettings(input as Row);
+        const { coach_model: _model, updated_at: _u, ...rest } = settings as unknown as Row;
+        return { saved: true, settings: rest, max_hr_in_use: max_hr };
+      } catch (e) {
+        if (e instanceof SettingsInputError) throw new ToolError(e.message);
+        throw e;
+      }
+    }
+    case "save_journal_entry": {
+      try {
+        const entry = await saveJournalEntry({ date: input.date, tags: input.tags ?? [], note: input.note }, ctx.today);
+        return { saved: true, entry: entry && { date: entry.date, tags: entry.tags.map(tagLabel), note: entry.note } };
+      } catch (e) {
+        if (e instanceof JournalInputError) throw new ToolError(e.message);
+        throw e;
+      }
+    }
+    case "save_workout_log": {
+      try {
+        if (input.id && !(await db.selectOne<Row>("fs_workout_logs", `select=id&id=eq.${encodeURIComponent(String(input.id))}`))) {
+          throw new ToolError(`no logged workout with id ${input.id}; leave id out to add a new one`);
+        }
+        const log = await saveLog(input as Row, ctx.today);
+        return { saved: true, note: "It is in their Training history now.", workout: { id: log.id, date: log.date, name: log.name, exercises: log.exercises.length } };
+      } catch (e) {
+        if (e instanceof TrainingInputError) throw new ToolError(e.message);
+        throw e;
+      }
+    }
+    case "delete_item": {
+      if (input.confirmed !== true) throw new ToolError("Ask them first and only delete it once they said yes (confirmed: true).");
+      return await deleteItem(String(input.kind ?? ""), String(input.id ?? ""));
+    }
+    case "get_deleted": {
+      await db.remove("fs_coach_trash", `deleted_at=lt.${new Date(Date.now() - TRASH_DAYS * 86_400_000).toISOString()}`);
+      const rows = await db.select<Row>("fs_coach_trash", "select=id,kind,label,deleted_at&order=deleted_at.desc&limit=50");
+      return { recently_deleted: rows };
+    }
+    case "restore_deleted":
+      return await restoreItem(String(input.id ?? ""));
     default:
       throw new ToolError(`unknown tool ${name}`);
   }
@@ -848,6 +1058,22 @@ function toolStatus(name: unknown, input: Json): string {
       return `Saving “${String(input.name ?? "your routine").slice(0, 40)}” to Training`;
     case "get_journal":
       return `Reading your journal${range}`;
+    case "get_body_age":
+      return "Looking at your body age";
+    case "get_settings":
+      return "Checking your settings";
+    case "update_settings":
+      return "Changing your settings";
+    case "save_journal_entry":
+      return `Saving your journal for ${shortDate(input.date)}`;
+    case "save_workout_log":
+      return `Logging “${String(input.name ?? "your workout").slice(0, 40)}”`;
+    case "delete_item":
+      return "Deleting it";
+    case "get_deleted":
+      return "Looking at Recently deleted";
+    case "restore_deleted":
+      return "Putting it back";
     default:
       return "Looking at your data";
   }
@@ -870,6 +1096,14 @@ Training
 - To make or change a routine, design it for them: their goal if they said one, how often they train, what they have logged, recovery and training load. Then save it with save_routine and say it's in the Training tab. To change one of theirs, pass its id. Don't save a routine they didn't ask for; suggest it first.
 - When reviewing workouts, be concrete: compare with their earlier sessions of the same exercise (more reps or kg at the same effort is progress), weekly volume, effort, and how recovery and strain looked the days after. Suggest the next session's numbers.
 - The app shows which muscles each exercise works (its exercise library) and done sets per muscle on a body map. get_training has the same numbers: use them to spot muscles trained much more or less than the rest, and keep routines balanced unless they want a focus.
+
+Changing things for them
+- You can change anything they can change in the app: settings (sex, sleep need, step goal, max heart rate, history length, wake-up times) with update_settings, journal days with save_journal_entry, logged workouts with save_workout_log, routines with save_routine, and delete a routine, logged workout or journal day with delete_item. Do it when they ask for it (or agree to a change you suggested), never on your own, and say afterwards exactly what you changed. Read the current value first (get_settings, get_journal, get_training) so you only change what they asked.
+- Before deleting, name the exact item (which routine, which workout and date, which journal day) and ask them to confirm; only call delete_item with confirmed: true after they said yes. Deleted items stay in Recently deleted for 30 days: get_deleted and restore_deleted put them back.
+- You can't change or delete what the band recorded (sleep, workouts, heart rate, steps): it comes from Google and syncs again. You also can't disconnect Google, wipe their data, or change things that live only on their phone (the Home screen layout, reminders, widgets): tell them where in the app to do it.
+
+Body age
+- get_body_age has their body age: the age whose typical person has their fitness, resting heart rate, steps, exercise and sleep, with each factor's years and the study behind it. It's an estimate from published population studies, not a medical or biological test; their VO₂ max is estimated from heart rate because the band doesn't report it. Explain it that way, and point to the factors they can change.
 
 Screenshots
 - They can attach workout files (CSV exports from apps like Strong, Hevy or an Apple Health exporter). FitStats saves the workouts in them to their Training log before you answer and tells you what it saved, how often they trained and what it assumed (units, date order): say plainly what was imported and what was left out, then look at how much and how they train (get_training has the last year in detail). If a file couldn't be read, explain why from its first lines and what export would work.
@@ -1374,7 +1608,8 @@ async function converse(o: {
         try {
           const out = await runTool(String(b.name), (b.input ?? {}) as Json, o.ctx, stats);
           results.push({ type: "tool_result", tool_use_id: b.id, content: JSON.stringify(out) });
-          if (TRAINING_WRITES.has(String(b.name))) o.send({ type: "changed", what: "training" });
+          const changed = DATA_WRITES[String(b.name)];
+          if (changed) o.send({ type: "changed", what: changed });
         } catch (e) {
           results.push({ type: "tool_result", tool_use_id: b.id, content: String((e as Error).message ?? e), is_error: true });
         }

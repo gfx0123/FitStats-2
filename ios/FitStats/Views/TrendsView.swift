@@ -9,6 +9,8 @@ private enum TrendsRoute: Hashable {
 
 struct TrendsView: View {
     @EnvironmentObject var model: AppModel
+    /// In a sheet: a Done button that closes it.
+    var onDone: (() -> Void)? = nil
 
     var body: some View {
         NavigationStack {
@@ -49,6 +51,13 @@ struct TrendsView: View {
             .screenBackground()
             .navigationTitle("Trends")
             .swipeBackFromAnywhere()
+            .toolbar {
+                if let onDone {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Done", action: onDone).fontWeight(.semibold).accessibilityIdentifier("trends-done")
+                    }
+                }
+            }
             .navigationDestination(for: DetailRoute.self) { DetailDestination(route: $0) }
             .navigationDestination(for: TrendsRoute.self) { route in
                 switch route {
@@ -329,5 +338,14 @@ struct MetricDetailView: View {
             let unit = def.unit.isEmpty ? "" : " \(def.unit)"
             return Format.signed(slope, decimals: max(def.decimals, 1)) + unit
         }
+    }
+}
+
+/// Trends in a sheet from Today, with a Done button.
+struct TrendsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        TrendsView(onDone: { dismiss() })
     }
 }

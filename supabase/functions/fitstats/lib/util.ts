@@ -195,3 +195,10 @@ export function median(xs: number[]): number | null {
 export function isFiniteNumber(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v);
 }
+
+/** Runs `p` after the response is sent (Supabase Edge Runtime), logging a failure. */
+export function background(p: Promise<unknown>): void {
+  const rt = (globalThis as unknown as { EdgeRuntime?: { waitUntil(p: Promise<unknown>): void } }).EdgeRuntime;
+  const guarded = p.catch((e) => console.error("background task failed", String(e)));
+  if (rt?.waitUntil) rt.waitUntil(guarded);
+}

@@ -133,6 +133,20 @@ final class ScreenshotTests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: id).firstMatch
     }
 
+    /// Trends opens full screen from the chart button at the top of Today.
+    private func openTrends(_ app: XCUIApplication) {
+        app.tabBars.buttons["Today"].tap()
+        let button = app.buttons["today-trends"]
+        XCTAssertTrue(button.waitForExistence(timeout: 5), "no Trends button on Today")
+        button.tap()
+        XCTAssertTrue(app.buttons["trends-done"].waitForExistence(timeout: 5), "Trends did not open")
+    }
+
+    private func closeTrends(_ app: XCUIApplication) {
+        let done = app.buttons["trends-done"]
+        if done.waitForExistence(timeout: 3) { done.tap() }
+    }
+
     func test01ConnectScreen() {
         let app = XCUIApplication()
         app.launchEnvironment["FITSTATS_FIXTURES"] = ""
@@ -175,7 +189,7 @@ final class ScreenshotTests: XCTestCase {
         open(app, "ring-strain", ["10-strain", "11-strain-2"])
         open(app, "ring-stress", ["12-stress"])
 
-        app.tabBars.buttons["Trends"].tap()
+        openTrends(app)
         shot("13-trends")
         app.swipeUp()
         shot("14-trends-2")
@@ -200,6 +214,7 @@ final class ScreenshotTests: XCTestCase {
         } else {
             XCTFail("missing open-insights")
         }
+        closeTrends(app)
 
         app.tabBars.buttons["Coach"].tap()
         shot("19-coach")
@@ -980,6 +995,46 @@ final class ScreenshotTests: XCTestCase {
         app.terminate()
     }
 
+    /// The Body age tab: the number, a factor opened, what would lower it, the history and the method.
+    func test13BodyAge() {
+        let fixtures = ProcessInfo.processInfo.environment["FITSTATS_FIXTURES"] ?? ""
+        XCTAssertFalse(fixtures.isEmpty, "FITSTATS_FIXTURES is not set")
+        let app = XCUIApplication()
+        app.launchEnvironment["FITSTATS_FIXTURES"] = fixtures
+        app.launch()
+        XCTAssertTrue(app.buttons["ring-recovery"].waitForExistence(timeout: 15), "Today screen did not load")
+
+        app.tabBars.buttons["Body age"].tap()
+        let hero = element(app, "bodyage-hero")
+        XCTAssertTrue(hero.waitForExistence(timeout: 5), "no body age in the fixtures")
+        XCTAssertTrue(hero.label.contains("years"), "body age hero: \(hero.label)")
+        shot("131-body-age")
+        let fitness = app.buttons["bodyage-factor-fitness"]
+        if fitness.waitForExistence(timeout: 3) {
+            fitness.tap()
+            XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Source:")).firstMatch.waitForExistence(timeout: 3),
+                          "the fitness factor didn't open")
+            shot("132-body-age-factor")
+        } else {
+            XCTFail("missing the fitness factor")
+        }
+        app.swipeUp()
+        shot("133-body-age-2")
+        let method = app.buttons["bodyage-method"]
+        for _ in 0..<4 where !(method.exists && method.isHittable) { app.swipeUp() }
+        shot("134-body-age-3")
+        guard method.exists, method.isHittable else {
+            XCTFail("missing How it's calculated")
+            return
+        }
+        method.tap()
+        XCTAssertTrue(app.navigationBars["How it's calculated"].waitForExistence(timeout: 5))
+        shot("135-body-age-method")
+        app.swipeUp()
+        shot("136-body-age-method-2")
+        app.terminate()
+    }
+
     /// Settings → Widgets: the widget previews with today's numbers and the sharing status.
     func test12Widgets() {
         let fixtures = ProcessInfo.processInfo.environment["FITSTATS_FIXTURES"] ?? ""
@@ -1033,7 +1088,7 @@ final class ScreenshotTests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.buttons["ring-recovery"].waitForExistence(timeout: 15), "Today screen did not load")
 
-        app.tabBars.buttons["Trends"].tap()
+        openTrends(app)
         let insights = app.buttons["open-insights"]
         if insights.waitForExistence(timeout: 5) {
             insights.tap()
@@ -1062,6 +1117,7 @@ final class ScreenshotTests: XCTestCase {
             shot(name)
             back(app)
         }
+        closeTrends(app)
 
         // The nearest day with a workout, then its heart-rate recovery card.
         app.tabBars.buttons["Today"].tap()

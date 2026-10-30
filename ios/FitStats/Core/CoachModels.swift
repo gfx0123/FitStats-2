@@ -144,9 +144,11 @@ struct CoachEvent: Decodable {
     let weekly: CoachWeekly?
     let usage: CoachUsage?
     let persona: String?
+    /// "changed": which of their data a tool changed.
+    let what: String?
 
     enum CodingKeys: String, CodingKey {
-        case type, text, message, code, brief, weekly, usage, persona
+        case type, text, message, code, brief, weekly, usage, persona, what
         case threadId = "thread_id"
         case messageId = "message_id"
     }

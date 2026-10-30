@@ -2,6 +2,7 @@
 // streaks, lagged correlations, journal tag effects and plain-language insights.
 // Day totals leave out today (still growing) and days you barely wore the band.
 
+import type { BodyAge } from "./bodyage.ts";
 import { tagLabel } from "./journal.ts";
 import type { DayRow } from "./scores.ts";
 import { addDays, daysBetween, mean, median, round, stdDev, weekdayIndex, type Ymd } from "./util.ts";
@@ -835,6 +836,8 @@ export interface StatsPayload {
   load: TrainingLoad;
   bedtime: BedtimeAnalysis;
   hrr: HrrPoint[];
+  /** Added by rebuildStats when their age is known (lib/bodyage.ts). */
+  body_age?: BodyAge | null;
 }
 
 export function buildStats(

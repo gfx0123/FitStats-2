@@ -71,10 +71,9 @@ struct MainTabs: View {
             CoachView()
                 .tabItem { Label("Coach", systemImage: "bubble.left.and.bubble.right.fill") }
                 .tag("coach")
-            // Insights are reached from the top of Trends.
-            TrendsView()
-                .tabItem { Label("Trends", systemImage: "chart.xyaxis.line") }
-                .tag("trends")
+            BodyAgeView()
+                .tabItem { Label("Body age", systemImage: "hourglass") }
+                .tag("bodyage")
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape.fill") }
                 .tag("settings")
@@ -94,7 +93,13 @@ struct MainTabs: View {
         // A tapped Home Screen widget opens its tab.
         .onChange(of: model.tabRequest) { _, request in
             guard let request else { return }
-            tab = request
+            // Trends opens from Today.
+            if request == "trends" {
+                tab = "today"
+                model.showTrends = true
+            } else {
+                tab = request
+            }
             model.tabRequest = nil
         }
     }

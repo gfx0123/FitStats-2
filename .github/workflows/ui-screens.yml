@@ -41,7 +41,7 @@ jobs:
           else:
               groups = [
                   {"name": "screens", "tests": "test01ConnectScreen test02AllScreens test11WeekAndSleep"},
-                  {"name": "home", "tests": "test03HomeCards"},
+                  {"name": "home", "tests": "test03HomeCards test13BodyAge"},
                   {"name": "insights-gestures", "tests": "test04InsightsPack test05Gestures test06DaysRemindersLargeText"},
                   {"name": "training-coach", "tests": "test07Training test08CoachesAndMuscles test09WakeTimes test10CoachTabs test12Widgets"},
               ]

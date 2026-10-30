@@ -302,6 +302,83 @@ struct StatsPayload: Codable {
     /// Workouts with a heart-rate recovery over the last 365 days, oldest first. Missing in stats
     /// cached by older servers.
     let hrr: [HrrPoint]?
+    /// Body age (server 1.14.0+); nil without their age from Google or enough data.
+    let bodyAge: BodyAge?
+
+    enum CodingKeys: String, CodingKey {
+        case generatedAt, today, firstDate, dayCount, metrics, streaks, correlations, insights, journal, load, bedtime, hrr
+        case bodyAge = "body_age"
+    }
+}
+
+/// The age whose typical person has their fitness, steps, exercise and sleep (lib/bodyage.ts).
+struct BodyAge: Codable, Equatable {
+    struct Factor: Codable, Equatable, Identifiable {
+        /// fitness, steps, exercise or sleep.
+        let key: String
+        let label: String
+        let value: Double
+        let unit: String
+        let reference: String
+        /// + older, − younger.
+        let years: Double
+        let detail: String
+        let source: String
+        let days: Int
+        var id: String { key }
+    }
+
+    struct Vo2: Codable, Equatable {
+        let value: Double
+        let typicalForAge: Double
+        let method: String
+        let errorMlKgMin: Double
+
+        enum CodingKeys: String, CodingKey {
+            case value, method
+            case typicalForAge = "typical_for_age"
+            case errorMlKgMin = "error_ml_kg_min"
+        }
+    }
+
+    struct WhatIf: Codable, Equatable, Identifiable {
+        let change: String
+        let years: Double
+        var id: String { change }
+    }
+
+    struct Point: Codable, Equatable, Identifiable {
+        let date: String
+        let bodyAge: Double
+        var id: String { date }
+
+        enum CodingKeys: String, CodingKey {
+            case date
+            case bodyAge = "body_age"
+        }
+    }
+
+    struct Window: Codable, Equatable {
+        let from: String
+        let to: String
+    }
+
+    let age: Int
+    let bodyAge: Double
+    let difference: Double
+    let factors: [Factor]
+    let missing: [String]
+    let vo2max: Vo2?
+    let whatIf: [WhatIf]
+    let history: [Point]
+    let window: Window
+    let note: String
+
+    enum CodingKeys: String, CodingKey {
+        case age, difference, factors, missing, vo2max, history, window, note
+        case bodyAge = "body_age"
+        case whatIf = "what_if"
+    }
 }
 
 /// Fitness and fatigue: exponentially weighted averages of daily TRIMP (fs_days.trimp).

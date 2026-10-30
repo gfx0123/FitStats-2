@@ -32,7 +32,7 @@ jobs:
           node-version: "22"
 
       - name: Server tests
-        run: node --experimental-strip-types --no-warnings --test supabase/tests/logic.test.ts supabase/tests/sync.test.ts supabase/tests/coach.test.ts supabase/tests/csvimport.test.ts
+        run: node --experimental-strip-types --no-warnings --test supabase/tests/logic.test.ts supabase/tests/sync.test.ts supabase/tests/coach.test.ts supabase/tests/csvimport.test.ts supabase/tests/bodyage.test.ts
 
       - name: Look for the access token
         id: token

@@ -14,7 +14,7 @@ import { coachBrief, coachDelete, coachStatus, coachThread, coachThreads, coachW
 import * as db from "./lib/db.ts";
 import { decodeIdToken, exchangeCode, GOOGLE_AUTH_URL, HEALTH_SCOPES, HealthClient, OAUTH_SCOPES } from "./lib/google.ts";
 import { JOURNAL_TAGS, journalEntries, JournalInputError, saveJournalEntry } from "./lib/journal.ts";
-import { wakeTimesFrom } from "./lib/planner.ts";
+import { applySettings, settingsWithMaxHr, SettingsInputError } from "./lib/settings.ts";
 import {
   clockFor,
   loadAccount,
@@ -35,7 +35,7 @@ import {
   trainingData,
   TrainingInputError,
 } from "./lib/training.ts";
-import { addDays } from "./lib/util.ts";
+import { addDays, background } from "./lib/util.ts";
 import { VERSION } from "./lib/version.ts";
 
 const APP_SCHEME = "fitstats://";
@@ -57,12 +57,6 @@ function redirect(location: string): Response {
 function withParams(base: string, params: Record<string, string>): string {
   const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== "")).toString();
   return qs ? `${base}${base.includes("?") ? "&" : "?"}${qs}` : base;
-}
-
-function background(p: Promise<unknown>): void {
-  const rt = (globalThis as unknown as { EdgeRuntime?: { waitUntil(p: Promise<unknown>): void } }).EdgeRuntime;
-  const guarded = p.catch((e) => console.error("background task failed", String(e)));
-  if (rt?.waitUntil) rt.waitUntil(guarded);
 }
 
 function b64url(bytes: Uint8Array): string {
@@ -310,68 +304,19 @@ async function stats(): Promise<Response> {
   return json(fresh?.value ?? null);
 }
 
-function intOrNull(v: unknown): number | null {
-  if (v === null || v === undefined || v === "") return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? Math.round(n) : null;
-}
-
-type SavedMaxHr = { max_hr_used: number | null; max_hr_source: string | null };
-
 /** Settings with the max heart rate strain, stress and zones use: "max_hr" {value, source}. */
 async function getSettings(): Promise<Response> {
-  const [acc, settings, state] = await Promise.all([
-    loadAccount(),
-    loadSettings(),
-    db.selectOne<SavedMaxHr>("fs_sync_state", "select=max_hr_used,max_hr_source&id=eq.1"),
-  ]);
-  const maxHr = await maxHrInUse(acc, settings, clockFor(acc).today(), state);
-  return json({ settings, max_hr: { value: maxHr.value, source: maxHr.source } });
+  return json(await settingsWithMaxHr());
 }
 
 async function saveSettings(req: Request): Promise<Response> {
   const body = (await req.json().catch(() => ({}))) as Row;
-  const current = await loadSettings();
-  const patch: Row = { updated_at: new Date().toISOString() };
-  if (typeof body.sex === "string") patch.sex = body.sex;
-  if ("max_hr_override" in body) patch.max_hr_override = intOrNull(body.max_hr_override);
-  if (isCoachModel(body.coach_model)) patch.coach_model = body.coach_model;
-  for (const k of ["sleep_need_min", "step_goal", "backfill_days"]) {
-    const v = intOrNull(body[k]);
-    if (v !== null) patch[k] = v;
-  }
-  if ("wake_times" in body) {
-    try {
-      patch.wake_times = wakeTimesFrom(body.wake_times);
-    } catch (e) {
-      return json({ error: "invalid settings", detail: (e as Error).message }, 400);
-    }
-  }
   try {
-    await db.update("fs_user_settings", "id=eq.1", patch);
+    return json(await applySettings(body, isCoachModel(body.coach_model) ? { coach_model: body.coach_model } : {}));
   } catch (e) {
-    return json({ error: "invalid settings", detail: String((e as Error).message).slice(0, 300) }, 400);
+    if (e instanceof SettingsInputError) return json({ error: "invalid settings", detail: e.message }, 400);
+    throw e;
   }
-  const settings = await loadSettings();
-  if (settings.backfill_days !== current.backfill_days) {
-    await db.update("fs_sync_state", "id=eq.1", { backfill_target: null, backfill_done: false, backfill_empty_chunks: 0 });
-  }
-  const acc = await loadAccount();
-  const today = clockFor(acc).today();
-  const intradayChanged = settings.sex !== current.sex || settings.max_hr_override !== current.max_hr_override;
-  const scoresChanged = intradayChanged || settings.sleep_need_min !== current.sleep_need_min ||
-    settings.step_goal !== current.step_goal || settings.backfill_days !== current.backfill_days;
-  const state = await db.selectOne<SavedMaxHr>("fs_sync_state", "select=max_hr_used,max_hr_source&id=eq.1");
-  const maxHr = await maxHrInUse(acc, settings, today, state);
-  if (scoresChanged) {
-    background((async () => {
-      // Recomputes the scores too and saves the max heart rate it used.
-      if (intradayChanged && acc) await recomputeHistory(today, settings, acc, maxHr);
-      else await recomputeScores(addDays(today, -settings.backfill_days), today, settings);
-      await rebuildStats(today, settings);
-    })());
-  }
-  return json({ settings, max_hr: { value: maxHr.value, source: maxHr.source } });
 }
 
 /** GET: the tag list and entries (default: the last 400 days). POST: save or clear one day. */
@@ -456,7 +401,7 @@ async function disconnect(params: URLSearchParams): Promise<Response> {
     updated_at: new Date().toISOString(),
   });
   if (params.get("wipe") === "true") {
-    const tables = ["fs_days", "fs_sleep", "fs_exercise", "fs_intraday", "fs_samples", "fs_cache", "fs_journal", "fs_coach_messages", "fs_coach_threads", "fs_home_layout", "fs_workout_logs", "fs_routines"];
+    const tables = ["fs_days", "fs_sleep", "fs_exercise", "fs_intraday", "fs_samples", "fs_cache", "fs_journal", "fs_coach_messages", "fs_coach_threads", "fs_home_layout", "fs_workout_logs", "fs_routines", "fs_coach_trash"];
     const keyColumn: Record<string, string> = { fs_samples: "metric", fs_cache: "key", fs_days: "date", fs_intraday: "date", fs_journal: "date" };
     for (const t of tables) await db.remove(t, `${keyColumn[t] ?? "id"}=not.is.null`);
     await db.update("fs_account", "id=eq.1", { google_sub: null, google_email: null, profile: null, google_settings: null, devices: null });

@@ -3,6 +3,7 @@
 // demand from the app; a database lock prevents overlapping runs. When the
 // recent days come back exactly as last time, nothing is written or recomputed.
 
+import { type BodyAge, bodyAge } from "./bodyage.ts";
 import * as db from "./db.ts";
 import { GoogleApiError, HealthClient, refreshAccessToken } from "./google.ts";
 import { journalEntries } from "./journal.ts";
@@ -870,7 +871,19 @@ export async function rebuildStats(today: Ymd, settings: UserSettings): Promise<
     ),
   ]);
   const stats = buildStats(days, today, settings, journal, workouts);
+  stats.body_age = await bodyAgeFor(days, today, settings);
   await db.upsert("fs_cache", [{ key: "stats", value: stats, updated_at: nowIso() }], "key");
+}
+
+/** Body age from their Google profile age and the max heart rate strain uses; null without the age. */
+async function bodyAgeFor(days: DayRow[], today: Ymd, settings: UserSettings): Promise<BodyAge | null> {
+  const acc = await loadAccount();
+  const age = typeof acc?.profile?.age === "number" ? acc.profile.age : null;
+  if (age === null) return null;
+  const state = await db.selectOne<{ max_hr_used: number | null; max_hr_source: string | null }>("fs_sync_state", "select=max_hr_used,max_hr_source&id=eq.1");
+  const maxHr = await maxHrInUse(acc, settings, today, state);
+  return bodyAge(days as unknown as (Record<string, unknown> & { date: Ymd })[], today,
+    { age, sex: settings.sex, maxHr: maxHr.value, maxHrSource: maxHr.source }, addDays);
 }
 
 /** One sync run within `budgetMs`. Safe to call concurrently (second caller is skipped). */

@@ -41,7 +41,8 @@ test("chat: tool round trip, streamed reply, saved thread and usage", async () =
   const first = claudeRequests[0];
   assert.equal(first.model, "claude-sonnet-5-5");
   assert.equal((first.output_config as Row).effort, "medium");
-  assert.deepEqual((first.tools as Row[]).map((t) => t.name), ["get_daily_metrics", "get_metric_stats", "get_day", "get_workouts", "get_training", "save_routine", "get_journal"]);
+  assert.deepEqual((first.tools as Row[]).map((t) => t.name), ["get_daily_metrics", "get_metric_stats", "get_day", "get_workouts", "get_training", "save_routine", "get_journal",
+    "get_body_age", "get_settings", "update_settings", "save_journal_entry", "save_workout_log", "delete_item", "get_deleted", "restore_deleted"]);
   const system = first.system as Row[];
   assert.deepEqual(system[1].cache_control, { type: "ephemeral" });
   assert.match(String(system[1].text), /Last 14 days/);
@@ -372,4 +373,49 @@ test("chat: an answer the app stops listening to (backgrounded, network lost) is
   assert.deepEqual(saved.map((m) => m.role), ["user", "assistant"]);
   assert.equal(saved[0].id, started.message_id);
   assert.match(String(saved[1].content), /Your HRV averaged/);
+});
+
+test("tools: the coach changes settings, the journal and logged workouts, and deletes only when confirmed, restorably", async () => {
+  const ctx = { acc: tables.fs_account[0] as never, settings: tables.fs_user_settings[0] as never, today: "2026-10-18", tz: "Europe/Budapest" };
+  // Settings: wake-up times (no recompute needed), and bad values are refused.
+  const times = [390, 390, 390, 390, 390, null, 540];
+  const saved = await coach.runTool("update_settings", { wake_times: times }, ctx, null) as Row;
+  assert.deepEqual((saved.settings as Row).wake_times, times);
+  assert.deepEqual(((await coach.runTool("get_settings", {}, ctx, null)) as Row).wake_times, times);
+  await assert.rejects(coach.runTool("update_settings", { sex: "robot" }, ctx, null), /sex must be/);
+  await coach.runTool("update_settings", { wake_times: null }, ctx, null);
+
+  // Journal: save, then delete only once confirmed, then put back.
+  await coach.runTool("save_journal_entry", { date: "2026-10-16", tags: ["alcohol", "Late dinner"], note: "Birthday" }, ctx, null);
+  assert.deepEqual(tables.fs_journal.find((j) => j.date === "2026-10-16")!.tags, ["alcohol", "Late dinner"]);
+  await assert.rejects(coach.runTool("save_journal_entry", { date: "2099-01-01", tags: [] }, ctx, null), /not in the future/);
+  await assert.rejects(coach.runTool("delete_item", { kind: "journal", id: "2026-10-16", confirmed: false }, ctx, null), /Ask them first/);
+  assert.ok(tables.fs_journal.some((j) => j.date === "2026-10-16"), "not deleted without confirmation");
+  const gone = await coach.runTool("delete_item", { kind: "journal", id: "2026-10-16", confirmed: true }, ctx, null) as Row;
+  assert.equal(gone.deleted, true);
+  assert.ok(!tables.fs_journal.some((j) => j.date === "2026-10-16"));
+  const trash = (await coach.runTool("get_deleted", {}, ctx, null) as Row).recently_deleted as Row[];
+  assert.equal(trash[0].label, "Journal 2026-10-16");
+  await coach.runTool("restore_deleted", { id: trash[0].id }, ctx, null);
+  assert.equal(tables.fs_journal.find((j) => j.date === "2026-10-16")!.note, "Birthday");
+  assert.equal(tables.fs_coach_trash.length, 0);
+
+  // Logged workouts: add, change by id, refuse an unknown id, delete and restore.
+  const added = (await coach.runTool("save_workout_log", {
+    date: "2026-10-18", name: "Pull day", effort: 7,
+    exercises: [{ name: "Pull-up", kind: "strength", sets: [{ reps: 8 }, { reps: 7 }] }],
+  }, ctx, null) as Row).workout as Row;
+  await coach.runTool("save_workout_log", {
+    id: added.id, date: "2026-10-18", name: "Pull day", effort: 8,
+    exercises: [{ name: "Pull-up", kind: "strength", sets: [{ reps: 8 }, { reps: 8 }] }],
+  }, ctx, null);
+  assert.equal(tables.fs_workout_logs.find((l) => l.id === added.id)!.effort, 8);
+  await assert.rejects(coach.runTool("save_workout_log", { id: crypto.randomUUID(), date: "2026-10-18", name: "X", exercises: [{ name: "Row", kind: "strength", sets: [] }] }, ctx, null), /no logged workout/);
+  await coach.runTool("delete_item", { kind: "workout_log", id: added.id, confirmed: true }, ctx, null);
+  assert.ok(!tables.fs_workout_logs.some((l) => l.id === added.id));
+  const t = ((await coach.runTool("get_deleted", {}, ctx, null)) as Row).recently_deleted as Row[];
+  assert.equal(t[0].label, "Pull day (2026-10-18)");
+  await coach.runTool("restore_deleted", { id: t[0].id }, ctx, null);
+  assert.ok(tables.fs_workout_logs.some((l) => l.id === added.id));
+  await assert.rejects(coach.runTool("delete_item", { kind: "routine", id: "nope", confirmed: true }, ctx, null), /id must be/);
 });

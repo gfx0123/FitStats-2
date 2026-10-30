@@ -29,7 +29,7 @@ export const tables: Record<string, Row[]> = {
     last_recent_sync_at: null, recent_fingerprint: null, stats_dirty: false, lock_until: null,
   }],
   fs_days: [], fs_sleep: [], fs_exercise: [], fs_intraday: [], fs_samples: [], fs_cache: [], fs_journal: [],
-  fs_coach_threads: [], fs_coach_messages: [], fs_routines: [], fs_workout_logs: [],
+  fs_coach_threads: [], fs_coach_messages: [], fs_routines: [], fs_workout_logs: [], fs_coach_trash: [],
 };
 
 function matches(row: Row, key: string, expr: string): boolean {
