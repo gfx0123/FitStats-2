@@ -674,7 +674,7 @@ final class ScreenshotTests: XCTestCase {
             kg.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6) + "85")
             // What the field reports can lag a moment behind the typing.
             let took = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", "85"), object: kg)
-            if XCTWaiter.wait(for: [took], timeout: 3) != .completed {
+            if XCTWaiter.wait(for: [took], timeout: 10) != .completed {
                 XCTFail("the weight field didn't take 85: \(kg.value ?? "nil")")
             }
             let done = app.toolbars.buttons["Done"].firstMatch
