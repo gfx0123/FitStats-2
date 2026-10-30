@@ -190,9 +190,14 @@ struct NatureScene: View {
             }
             let (light, dark) = p.hills[i]
             var hill = Path()
-            hill.move(to: CGPoint(x: 0, y: 1300))
+            hill.move(to: CGPoint(x: -4, y: 1300))
+            hill.addLine(to: CGPoint(x: -4, y: ridge(-4)))
             for x in stride(from: CGFloat(0), through: w, by: 4) { hill.addLine(to: CGPoint(x: x, y: ridge(x))) }
-            hill.addLine(to: CGPoint(x: w, y: 1300))
+            // 402 isn't a multiple of 4: end the ridge exactly at (and a little past) the right edge,
+            // or a sliver of sky shows down that side.
+            hill.addLine(to: CGPoint(x: w, y: ridge(w)))
+            hill.addLine(to: CGPoint(x: w + 4, y: ridge(w + 4)))
+            hill.addLine(to: CGPoint(x: w + 4, y: 1300))
             hill.closeSubpath()
             g.fill(hill, with: .linearGradient(Gradient(stops: [.init(color: light, location: 0), .init(color: dark, location: 0.5)]),
                                                startPoint: CGPoint(x: 0, y: layer.y - layer.amp), endPoint: CGPoint(x: 0, y: 874)))
