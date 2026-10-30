@@ -59,7 +59,7 @@ private struct ScenePalette {
                                 hills: [(0x7F9C9C, 0x6C8B8D), (0x55767A, 0x45666A), (0x35565A, 0x2A4749), (0x1F3A3B, 0x172D2E), (0x112324, 0x0B1819)].map { (rgb($0.0), rgb($0.1)) },
                                 mist: rgb(0xE1EBE8), mote: rgb(0xFFECBE))
         case .day:
-            return ScenePalette(sky: [0x1B4E66, 0x2F6F8A, 0x5E99AC, 0xA9CDC9, 0xCFE3D6].map(rgb), sun: CGPoint(x: 236, y: 104), sunRadius: 18,
+            return ScenePalette(sky: [0x1B4E66, 0x2F6F8A, 0x5E99AC, 0xA9CDC9, 0xCFE3D6].map(rgb), sun: CGPoint(x: 340, y: 232), sunRadius: 18,
                                 sunCore: rgb(0xFFFCF0), halo: rgb(0xFFF8DC),
                                 hills: [(0x86AFA3, 0x77A193), (0x5F9182, 0x4F8172), (0x3E6E5D, 0x33604F), (0x264C3E, 0x1D3F33), (0x143026, 0x0E241C)].map { (rgb($0.0), rgb($0.1)) },
                                 mist: rgb(0xEBF4F0), mote: rgb(0xFFFAE1))
