@@ -473,8 +473,9 @@ struct AskCoachRow: View {
                             .font(Font.fs(.footnote, .semibold))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(Capsule().fill(Theme.sleep.opacity(0.16)))
-                            .foregroundStyle(Theme.sleep)
+                            .background(Capsule().fill(.ultraThinMaterial).overlay(Capsule().fill(Theme.sleep.opacity(0.22))))
+                            .overlay(Capsule().stroke(Theme.sleep.opacity(0.35), lineWidth: 1))
+                            .foregroundStyle(Color(red: 0.86, green: 0.82, blue: 1.0))
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("ask-coach-\(prompt.1)")

@@ -1090,10 +1090,15 @@ struct HomeLargeCard: View {
                         Text(caption).font(Font.fs(.headline, .medium)).foregroundStyle(Theme.recoveryColor(recovery))
                     }
                     .frame(maxWidth: .infinity)
+                    // Readable on the brighter daytime sky.
+                    .shadow(color: .black.opacity(0.35), radius: 8, y: 1)
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel("Recovery \(recovery.map { "\(Int($0.rounded())) percent" } ?? "no data"), \(caption)")
-                    recoverySummary(day)
-                    if let why = breakdown.recoveryWhy { ScoreWhyLine(why: why) }
+                    Group {
+                        recoverySummary(day)
+                        if let why = breakdown.recoveryWhy { ScoreWhyLine(why: why) }
+                    }
+                    .shadow(color: .black.opacity(0.35), radius: 6, y: 1)
                 }
             }
             .buttonStyle(.plain)
