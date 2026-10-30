@@ -421,8 +421,11 @@ final class ScreenshotTests: XCTestCase {
         editTop(app)
         let timeOfDay = app.switches["home-time-of-day"]
         if timeOfDay.waitForExistence(timeout: 3) {
-            timeOfDay.tap()
-            sleep(1)
+            // On the switch itself (the right end of the row), once more if it didn't turn on.
+            for _ in 0..<2 where (timeOfDay.value as? String) != "1" {
+                timeOfDay.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+                sleep(1)
+            }
             shot("68-home-time-of-day")
             let evening = app.buttons["Evening"]
             if evening.waitForExistence(timeout: 3) {
