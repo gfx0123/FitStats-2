@@ -148,6 +148,9 @@ struct LiveHeartRateView: View {
                     AxisValueLabel().foregroundStyle(Theme.tertiary)
                 }
             }
+            .chartTapBubble(points.map { p in
+                ChartPoint(x: p.date, y: p.bpm, title: "\(p.bpm) bpm", subtitle: p.date.formatted(.dateTime.hour().minute().second()))
+            }, tint: Theme.heart)
             .frame(height: 170)
         }
     }

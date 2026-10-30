@@ -209,6 +209,10 @@ struct BodyAgeView: View {
                     AxisValueLabel().foregroundStyle(Theme.tertiary)
                 }
             }
+            .chartTapBubble(points.map { p in
+                ChartPoint(x: p.date, y: p.value, title: "Body age \(Format.number(p.value, decimals: 1))",
+                           subtitle: "30 days to \(p.date.formatted(.dateTime.month(.wide).day()))")
+            }, tint: Theme.recoveryGreen)
             .frame(height: 160)
         }
         .accessibilityIdentifier("bodyage-history")

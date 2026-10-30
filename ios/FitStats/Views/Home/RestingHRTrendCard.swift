@@ -134,6 +134,10 @@ struct RestingHRTrendCard: View {
                 }
             }
         }
+        .chartTapBubble(points.map { p in
+            ChartPoint(x: p.date, y: p.value, title: "Resting HR \(Int(p.value.rounded())) bpm",
+                       subtitle: p.date.formatted(.dateTime.month(.wide).day()))
+        }, tint: Theme.heart)
         .frame(height: 110)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Resting heart rate line chart, \(windowDays) days ending \(Format.longDay(date))")

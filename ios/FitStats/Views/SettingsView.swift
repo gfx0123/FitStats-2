@@ -99,7 +99,6 @@ struct SettingsView: View {
             } else {
                 Text("Loading…").foregroundStyle(Theme.secondary)
             }
-        }
         } header: {
             SettingsHeader("Coach", icon: "sparkles", color: Theme.sleep)
         }

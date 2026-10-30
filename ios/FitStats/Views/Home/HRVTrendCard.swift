@@ -399,5 +399,8 @@ private struct HRVTrendChart: View {
                 }
             }
         }
+        .chartTapBubble(points.map { p in
+            ChartPoint(x: p.date, y: p.value, title: def.bubbleTitle(p.value), subtitle: p.date.formatted(.dateTime.month(.wide).day()))
+        }, tint: color)
     }
 }

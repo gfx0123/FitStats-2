@@ -127,7 +127,16 @@ struct DailyMetricChart: View {
             }
         }
         .chartYScale(domain: domain)
+        .chartTapBubble(points.map { .day($0.date, $0.value, title: def.bubbleTitle($0.value)) }, tint: color)
         .frame(height: height)
+    }
+}
+
+extension MetricDef {
+    /// "Stress 17", "HRV 55 ms", "Steps 5,757" (no unit when it repeats the name).
+    func bubbleTitle(_ v: Double) -> String {
+        let repeats = !unit.isEmpty && shortLabel.lowercased().contains(unit.lowercased())
+        return "\(shortLabel) \(formatted(v, withUnit: !repeats))"
     }
 }
 
@@ -226,6 +235,8 @@ struct HeartRateDayChart: View {
             }
         }
         .chartYScale(domain: .automatic(includesZero: false))
+        .chartTapBubble(data.map { ChartPoint(x: $0.minute + 2, y: $0.value, title: "\(Int($0.value.rounded())) bpm",
+                                              subtitle: Format.clock(Double($0.minute))) }, tint: color)
         .frame(height: height)
     }
 }
@@ -238,6 +249,8 @@ struct HourValue: Identifiable {
 
 struct HourlyBarsChart: View {
     let values: [Double?]
+    /// What the bubble calls a bar's value ("Stress 24").
+    var name: String = "Stress"
     var colorFor: (Double) -> Color
 
     var body: some View {
@@ -269,6 +282,10 @@ struct HourlyBarsChart: View {
                 AxisValueLabel().foregroundStyle(Theme.tertiary)
             }
         }
+        .chartTapBubble(data.map { h in
+            ChartPoint(x: h.hour, y: h.value, title: "\(name) \(Int(h.value.rounded()))",
+                       subtitle: "\(Format.hour(Int(h.hour)))–\(Format.hour((Int(h.hour) + 1) % 24))")
+        }, tint: data.first.map { colorFor($0.value) } ?? Theme.stress)
         .frame(height: 150)
     }
 }
@@ -311,6 +328,7 @@ struct WeekdayChart: View {
             }
         }
         .chartYScale(domain: domain)
+        .chartTapBubble(data.map { ChartPoint(x: $0.name, y: $0.value, title: def.bubbleTitle($0.value), subtitle: "\($0.name) average") }, tint: color)
         .frame(height: 140)
     }
 }
@@ -326,6 +344,9 @@ struct SamplesChart: View {
     let samples: [[Double]]
     var color: Color
     var zone: TimeZone?
+    /// The bubble's wording for a sample: "HRV 52".
+    var name: String = ""
+    var decimals: Int = 0
 
     var body: some View {
         let data = samples.compactMap { s -> TimedValue? in
@@ -359,6 +380,8 @@ struct SamplesChart: View {
             }
         }
         .chartYScale(domain: ChartAxis.paddedDomain(data.map(\.value), includeZero: false))
+        .chartTapBubble(data.map { ChartPoint(x: $0.date, y: $0.value, title: [name, Format.number($0.value, decimals: decimals)].filter { !$0.isEmpty }.joined(separator: " "),
+                                              subtitle: Format.time($0.date, zone: zone)) }, tint: color)
         .frame(height: 130)
     }
 }
@@ -405,6 +428,93 @@ struct ScatterChart: View {
                 }
             }
         }
+        .chartTapBubble(points.map { p in
+            ChartPoint(x: p.x, y: p.y, title: yDef.bubbleTitle(p.y), subtitle: xDef.bubbleTitle(p.x))
+        }, tint: color)
         .frame(height: 240)
+    }
+}
+
+// MARK: tap to read a value
+
+/// A point a chart can show in its tap bubble: where it sits (in the chart's own x and y
+/// values) and what the bubble says, such as "Stress 17" over "Sep 8".
+struct ChartPoint {
+    let title: String
+    let subtitle: String
+    let locate: (ChartProxy) -> CGPoint?
+
+    init<X: Plottable, Y: Plottable>(x: X, y: Y, title: String, subtitle: String) {
+        self.title = title
+        self.subtitle = subtitle
+        locate = { $0.position(for: (x: x, y: y)) }
+    }
+
+    /// A day's value, placed at the middle of the day (where its bar or point is drawn).
+    static func day(_ date: Date, _ value: Double, title: String) -> ChartPoint {
+        ChartPoint(x: date.addingTimeInterval(12 * 3600), y: value, title: title,
+                   subtitle: date.formatted(.dateTime.month(.wide).day()))
+    }
+}
+
+extension View {
+    /// Tapping the chart picks the point nearest the finger (by x) and shows its value in a
+    /// small bubble above it; tapping it again, or the same spot, hides it.
+    func chartTapBubble(_ points: [ChartPoint], tint: Color) -> some View {
+        chartOverlay { proxy in ChartBubbleOverlay(proxy: proxy, points: points, tint: tint) }
+    }
+}
+
+private struct ChartBubbleOverlay: View {
+    let proxy: ChartProxy
+    let points: [ChartPoint]
+    let tint: Color
+    @State private var selected: Int?
+
+    var body: some View {
+        GeometryReader { geo in
+            let plot = proxy.plotFrame.map { geo[$0] } ?? CGRect(origin: .zero, size: geo.size)
+            ZStack(alignment: .topLeading) {
+                Rectangle()
+                    .fill(Color.clear)
+                    .contentShape(Rectangle())
+                    .onTapGesture { location in
+                        let nearest = points.indices.compactMap { i -> (Int, CGFloat)? in
+                            guard let p = points[i].locate(proxy) else { return nil }
+                            return (i, abs(plot.minX + p.x - location.x))
+                        }.min { $0.1 < $1.1 }?.0
+                        withAnimation(.snappy(duration: 0.2)) { selected = nearest == selected ? nil : nearest }
+                        Haptics.tap()
+                    }
+                if let selected, selected < points.count, let p = points[selected].locate(proxy) {
+                    let x = plot.minX + p.x, y = plot.minY + p.y
+                    Rectangle()
+                        .fill(Color.white.opacity(0.35))
+                        .frame(width: 1, height: plot.height)
+                        .position(x: x, y: plot.midY)
+                        .allowsHitTesting(false)
+                    Circle()
+                        .fill(tint)
+                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                        .frame(width: 10, height: 10)
+                        .position(x: x, y: y)
+                        .allowsHitTesting(false)
+                    VStack(spacing: 1) {
+                        Text(points[selected].title).font(Font.fs(.subheadline, .semibold)).foregroundStyle(.white)
+                        Text(points[selected].subtitle).font(Font.fs(.caption2)).foregroundStyle(Theme.secondary)
+                    }
+                    .lineLimit(1)
+                    .fixedSize()
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Capsule().fill(.ultraThinMaterial).overlay(Capsule().fill(Color.black.opacity(0.35))))
+                    .overlay(Capsule().stroke(tint.opacity(0.6), lineWidth: 1))
+                    .position(x: min(max(x, 64), geo.size.width - 64), y: max(y - 34, 6))
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("chart-bubble")
+                    .onTapGesture { withAnimation(.snappy(duration: 0.2)) { self.selected = nil } }
+                }
+            }
+        }
     }
 }

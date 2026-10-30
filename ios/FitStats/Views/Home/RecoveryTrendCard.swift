@@ -114,6 +114,9 @@ struct RecoveryTrendCard: View {
                 AxisValueLabel().foregroundStyle(Theme.tertiary)
             }
         }
+        .chartTapBubble(points.map { p in
+            ChartPoint(x: p.date, y: p.value, title: "Recovery \(Format.number(p.value))%", subtitle: Format.longDay(p.date))
+        }, tint: Theme.recoveryGreen)
         .frame(height: 110)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Recovery bar chart, \(days) days ending \(Format.longDay(date))")

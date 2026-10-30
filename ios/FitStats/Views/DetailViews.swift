@@ -174,13 +174,13 @@ struct SleepDetailView: View {
             if let hrv = detail?.samples["hrv"], hrv.count >= 2 {
                 Card {
                     SectionHeader(title: "Overnight HRV", subtitle: "RMSSD samples during sleep (ms)")
-                    SamplesChart(samples: hrv, color: Theme.heart, zone: model.zone)
+                    SamplesChart(samples: hrv, color: Theme.heart, zone: model.zone, name: "HRV")
                 }
             }
             if let spo2 = detail?.samples["spo2"], spo2.count >= 2 {
                 Card {
                     SectionHeader(title: "Overnight SpO₂", subtitle: "Blood oxygen during sleep (%)")
-                    SamplesChart(samples: spo2, color: Theme.stress, zone: model.zone)
+                    SamplesChart(samples: spo2, color: Theme.stress, zone: model.zone, name: "SpO₂", decimals: 1)
                 }
             }
             let need = Double(model.status?.settings.sleepNeedMin ?? 480)

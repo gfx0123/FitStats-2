@@ -109,9 +109,18 @@ struct TrainingLoadChart: View {
                 AxisValueLabel().foregroundStyle(Theme.tertiary)
             }
         }
+        .chartTapBubble(bubblePoints(data), tint: Self.fitnessColor)
         .frame(height: height)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Fitness and fatigue chart, last \(days) days")
+    }
+
+    /// One bubble per day, at the fitness line: "Fitness 42 · Fatigue 55".
+    private func bubblePoints(_ data: [LoadLinePoint]) -> [ChartPoint] {
+        let fatigue = Dictionary(data.filter { !$0.fitness }.map { ($0.date, $0.value) }, uniquingKeysWith: { a, _ in a })
+        return data.filter(\.fitness).map { p in
+            .day(p.date, p.value, title: "Fitness \(Int(p.value.rounded())) · Fatigue \(fatigue[p.date].map { "\(Int($0.rounded()))" } ?? "–")")
+        }
     }
 }
 

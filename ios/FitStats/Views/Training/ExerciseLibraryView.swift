@@ -236,6 +236,10 @@ struct ExerciseInfoView: View {
                     }
                 }
                 .chartYScale(domain: .automatic(includesZero: false))
+                .chartTapBubble(points.map { p in
+                    ChartPoint(x: p.0, y: p.1, title: "\(Format.number(p.1, decimals: p.1.rounded() == p.1 ? 0 : 1)) kg",
+                               subtitle: p.0.formatted(.dateTime.month(.wide).day()))
+                }, tint: Theme.muscle)
                 .frame(height: 150)
             }
         }

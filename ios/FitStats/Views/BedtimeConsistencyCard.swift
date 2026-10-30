@@ -6,6 +6,8 @@ import SwiftUI
 struct BedtimeConsistencyCard: View {
     let endDate: String
     @EnvironmentObject private var model: AppModel
+    /// The night tapped, shown in a bubble over its bar.
+    @State private var picked: String?
 
     private struct Night: Identifiable {
         let date: String
@@ -31,6 +33,7 @@ struct BedtimeConsistencyCard: View {
                     Self.draw(nights, in: ctx, size: size, from: lowest, to: highest, usualBed: usualBed, usualWake: usualWake)
                 }
                 .frame(height: CGFloat(nights.count) * Self.rowHeight + 22)
+                .overlay { tapLayer(nights, from: lowest, to: highest) }
                 Text(summary(beds: beds, wakes: wakes, usualBed: usualBed, usualWake: usualWake))
                     .font(Font.fs(.caption))
                     .foregroundStyle(Theme.secondary)
@@ -97,6 +100,40 @@ struct BedtimeConsistencyCard: View {
             line.move(to: CGPoint(x: x(usual), y: 0))
             line.addLine(to: CGPoint(x: x(usual), y: rowsBottom))
             ctx.stroke(line, with: .color(Theme.secondary), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+        }
+    }
+
+    /// Tapping a row shows that night's times in a bubble over its bar; tapping it again hides it.
+    private func tapLayer(_ nights: [Night], from lowest: Double, to highest: Double) -> some View {
+        GeometryReader { geo in
+            let left = Self.labelWidth + 6, right = geo.size.width - 4
+            let x = { (m: Double) -> CGFloat in left + (right - left) * CGFloat((m - lowest) / max(1, highest - lowest)) }
+            ZStack(alignment: .topLeading) {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture { location in
+                        let i = Int(location.y / Self.rowHeight)
+                        guard nights.indices.contains(i) else { return }
+                        withAnimation(.snappy(duration: 0.2)) { picked = picked == nights[i].date ? nil : nights[i].date }
+                        Haptics.tap()
+                    }
+                if let i = nights.firstIndex(where: { $0.date == picked }) {
+                    let n = nights[i]
+                    VStack(spacing: 1) {
+                        Text("\(Format.clock(n.bed)) – \(Format.clock(n.wake))").font(Font.fs(.subheadline, .semibold)).foregroundStyle(.white)
+                        Text("Asleep \(Format.duration(n.wake - n.bed)) · \(Format.longDay(n.date))").font(Font.fs(.caption2)).foregroundStyle(Theme.secondary)
+                    }
+                    .lineLimit(1)
+                    .fixedSize()
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Capsule().fill(.ultraThinMaterial).overlay(Capsule().fill(Color.black.opacity(0.35))))
+                    .overlay(Capsule().stroke(Theme.sleep.opacity(0.6), lineWidth: 1))
+                    .position(x: min(max((x(n.bed) + x(n.wake)) / 2, 100), geo.size.width - 100),
+                              y: max(CGFloat(i) * Self.rowHeight - 16, 4))
+                    .onTapGesture { withAnimation(.snappy(duration: 0.2)) { picked = nil } }
+                }
+            }
         }
     }
 

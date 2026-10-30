@@ -321,6 +321,9 @@ struct WorkoutDetailView: View {
                     }
                 }
                 .chartYScale(domain: .automatic(includesZero: false))
+                .chartTapBubble(points.map { p in
+                    ChartPoint(x: p.minute, y: p.value, title: "\(Int(p.value.rounded())) bpm", subtitle: "minute \(p.minute)")
+                }, tint: Theme.heart)
                 .frame(height: 180)
             } else {
                 Text("No minute heart rate for this workout.").font(Font.fs(.footnote)).foregroundStyle(Theme.tertiary)
@@ -462,8 +465,11 @@ struct WorkoutDetailView: View {
                     AxisValueLabel().foregroundStyle(Theme.tertiary)
                 }
             }
+            .chartTapBubble(data.map { p in
+                ChartPoint(x: p.date, y: p.value, title: "Drop \(Int(p.value.rounded())) bpm",
+                           subtitle: p.date.formatted(.dateTime.month(.abbreviated).day().year()))
+            }, tint: Theme.heart)
             .frame(height: 120)
-            .accessibilityElement(children: .ignore)
             .accessibilityLabel("\(x.displayName) heart-rate recovery history, \(data.count) workouts")
         }
     }
