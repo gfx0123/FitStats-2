@@ -101,7 +101,7 @@ struct BodyAgeView: View {
                         .background(Circle().fill(Self.tint(f.key).opacity(0.15)))
                     VStack(alignment: .leading, spacing: 2) {
                         Text(f.label).font(.subheadline.weight(.semibold)).foregroundStyle(.white)
-                        Text("\(Format.number(f.value, decimals: f.value < 100 ? 1 : 0)) \(f.unit)")
+                        Text("\(Format.number(f.value, decimals: f.key == "fitness" || f.key == "sleep" ? 1 : 0)) \(f.unit)")
                             .font(.caption)
                             .foregroundStyle(Theme.secondary)
                             .lineLimit(2)
