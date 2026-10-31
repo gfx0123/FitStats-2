@@ -1114,8 +1114,8 @@ struct HomeLargeCard: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("ring-recovery")
-            if let question = coachQuestion { CoachAskPill(question: question) }
             .padding(.horizontal, 4)
+            if let question = coachQuestion { CoachAskPill(question: question) }
             // Strain, Sleep and Stress as three small cards under the big number.
             HStack(alignment: .top, spacing: 10) {
                 smallRing(.strain(date), "Strain", day.double("strain"), Theme.strain, Theme.strainEnd,
