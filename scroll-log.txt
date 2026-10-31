@@ -1,0 +1,1 @@
+scrolled to coach-tab: exists true, frame (135.8333282470703, 552.5, 130.6666717529297, 35.0), on screen true
