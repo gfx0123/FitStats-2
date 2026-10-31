@@ -402,9 +402,18 @@ struct TodayView: View {
             }
             .accessibilityIdentifier("home-card-\(item.id)")
         } else {
+            let question = coachQuestion(item)
+            // Large, the scores area isn't a card: its coach button sits inside it (scoresCard).
+            let tabbed = question != nil && !(item.card == .scores && item.size == .large)
             VStack(spacing: 0) {
                 cellContent(item, size: item.size)
-                if let question = coachQuestion(item) { CoachCardTab(question: question) }
+                    .transformEnvironment(\.homeCardBare) { if tabbed { $0 = true } }
+                if tabbed, let question { CoachCardTab(question: question, joined: true) }
+            }
+            .backgroundPreferenceValue(CoachTabBoundsKey.self) { anchor in
+                if tabbed {
+                    GeometryReader { geo in CardWithTabBackground(tab: anchor.map { geo[$0] }) }
+                }
             }
                 .highPriorityGesture(
                     LongPressGesture(minimumDuration: 0.45).onEnded { _ in startEditing() }
@@ -446,7 +455,7 @@ struct TodayView: View {
         } else if item.card == .stack {
             SmartStackView(entries: visibleEntries(item), size: size, date: date, rotate: item.options.rotate ?? true)
         } else if size == .large {
-            HomeLargeCard(spec: item.spec, date: date)
+            HomeLargeCard(spec: item.spec, date: date, coachQuestion: item.card == .scores && !editing ? coachQuestion(item) : nil)
         } else {
             HomeGlance(spec: item.spec, size: size, date: date)
         }
@@ -991,6 +1000,8 @@ struct TodayView: View {
 struct HomeLargeCard: View {
     let spec: HomeCardSpec
     let date: String
+    /// Scores: the question its coach button asks (nil: no button).
+    var coachQuestion: String? = nil
     @EnvironmentObject private var model: AppModel
 
     private var card: HomeCard { spec.card }
@@ -1103,6 +1114,7 @@ struct HomeLargeCard: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("ring-recovery")
+            if let question = coachQuestion { CoachAskPill(question: question) }
             .padding(.horizontal, 4)
             // Strain, Sleep and Stress as three small cards under the big number.
             HStack(alignment: .top, spacing: 10) {
